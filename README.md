@@ -1,23 +1,6 @@
 # SkillForge - Skill Exchange Platform
 
-> Continued development of a skill exchange platform (original: July 2025)
-> 
-> **Initial Implementation**: [SkillForge-Original](https://github.com/ChalithH/SkillForge)
-
-## About
-
-SkillForge is an ongoing project exploring skill exchange through a time-credit economy. I've continued developing and refining the platform since the initial implementation, focusing on user experience and code quality improvements.
-
-### Recent Improvements
-
-- **User Interface**: Cleaned up non-functional elements and improved navigation flow
-- **Development Setup**: Added environment configuration templates for easier local development
-- **Code Quality**: Enhanced error handling and optimised user workflows
-- **Developer Experience**: Streamlined setup process with better configuration management
-
-## Project Overview
-
-SkillForge enables users to teach and learn skills through a time-credit economy. Users earn credits by teaching skills and spend them to learn from others, creating a balanced ecosystem of knowledge exchange.
+SkillForge is a skill exchange platform with a time-credit economy, enabling users to teach and learn skills through balanced knowledge exchange. Users earn credits by teaching skills and spend them to learn from others, creating a sustainable ecosystem of knowledge sharing.
 
 ### Core Features
 
@@ -106,8 +89,8 @@ The platform connects people based on complementary skills and learning interest
 ### Quick Start with Docker
 ```bash
 # Clone and start (uses working defaults)
-git clone https://github.com/ChalithH/SkillForge-Enhanced.git
-cd SkillForge-Enhanced
+git clone https://github.com/ChalithH/SkillForge.git
+cd SkillForge
 cp .env.example .env
 docker-compose up
 
@@ -175,4 +158,5 @@ npm run dev  # Or edit files directly - hot reload works automatically
 ![React](https://img.shields.io/badge/React-18-blue?logo=react)
 ![.NET](https://img.shields.io/badge/.NET-8-purple?logo=dotnet)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
+
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)
