@@ -128,25 +128,40 @@ builder.Services.AddAuthentication(x =>
 // Configure CORS for SignalR support
 builder.Services.AddCors(options =>
 {
+    // Get allowed origins from configuration
+    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[]
+    {
+        "http://localhost:3000",
+        "http://frontend:3000", 
+        "http://127.0.0.1:3000"
+    };
+
     options.AddPolicy("AllowReactApp",
-        builder => builder
-            .WithOrigins(
-                "http://localhost:3000",      // Local development
-                "http://frontend:3000",       // Docker container
-                "http://127.0.0.1:3000",      // Alternative localhost
-                "http://skillforge-frontend.australiaeast.azurecontainer.io"  // Azure production
-            )
+        corsBuilder => corsBuilder
+            .WithOrigins(allowedOrigins)
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()
             .SetIsOriginAllowed(origin =>
             {
-                // Allow any localhost, frontend container, or Azure origins
-                return origin?.StartsWith("http://localhost") == true ||
-                       origin?.StartsWith("http://127.0.0.1") == true ||
-                       origin?.StartsWith("http://frontend") == true ||
-                       origin?.StartsWith("http://skillforge-frontend.australiaeast.azurecontainer.io") == true;
-            })); // Dynamic origin validation for SignalR
+                if (string.IsNullOrEmpty(origin)) return false;
+
+                // Allow configured origins
+                if (allowedOrigins.Contains(origin)) return true;
+
+                // Allow localhost variations for development
+                if (origin.StartsWith("http://localhost") || 
+                    origin.StartsWith("http://127.0.0.1") || 
+                    origin.StartsWith("http://frontend")) return true;
+
+                // Allow Azure Container Apps domains
+                if (origin.StartsWith("https://") && origin.Contains(".azurecontainerapps.io")) return true;
+
+                // Allow Google Cloud Run domains  
+                if (origin.StartsWith("https://") && origin.Contains(".run.app")) return true;
+
+                return false;
+            }));
 });
 
 // Configure SignalR with security settings
@@ -210,26 +225,45 @@ app.MapControllers();
 app.MapHub<NotificationHub>("/hubs/notification");
 app.MapHealthChecks("/health");
 
-// Apply migrations on startup for all environments
+// Initialise database on startup
 using var scope = app.Services.CreateScope();
 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
 try 
 {
-    Console.WriteLine("Starting database migrations...");
-    dbContext.Database.Migrate();
-    Console.WriteLine("Database migrations completed successfully.");
+    var providerName = dbContext.Database.ProviderName;
+    logger.LogInformation("Initialising database with provider: {ProviderName}", providerName);
+
+    if (providerName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true)
+    {
+        logger.LogInformation("Using SQLite - creating database schema...");
+        // For SQLite, use EnsureCreated to avoid SQL Server migration syntax issues
+        var created = dbContext.Database.EnsureCreated();
+        logger.LogInformation("SQLite database schema {Status}", created ? "created" : "already exists");
+    }
+    else if (providerName?.Contains("SqlServer", StringComparison.OrdinalIgnoreCase) == true)
+    {
+        logger.LogInformation("Using SQL Server - applying migrations...");
+        dbContext.Database.Migrate();
+        logger.LogInformation("SQL Server migrations completed successfully");
+    }
+    else
+    {
+        logger.LogWarning("Unknown database provider: {ProviderName}. Attempting to use migrations...", providerName);
+        dbContext.Database.Migrate();
+        logger.LogInformation("Migrations completed for provider: {ProviderName}", providerName);
+    }
     
     // Seed the database
     DbInitializer.Initialize(dbContext);
-    Console.WriteLine("Database seeding completed.");
+    logger.LogInformation("Database seeding completed successfully");
 }
 catch (Exception ex)
 {
     // Log but don't crash the app - important for production resilience
-    Console.WriteLine($"Database migration failed: {ex.Message}");
-    Console.WriteLine($"Stack trace: {ex.StackTrace}");
-    // Continue running - health endpoint will still work
+    logger.LogError(ex, "Database initialisation failed: {Message}", ex.Message);
+    logger.LogWarning("Application will continue running - database may not be available");
 }
 
 app.Run();

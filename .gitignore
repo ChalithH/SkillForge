@@ -68,3 +68,16 @@ logs/
 
 # Docker local overrides
 docker-compose.override.yml
+
+# SQLite database files (keep in repo structure but exclude actual data)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Deployment secrets (security critical)
+.azure-credentials.json
+.gcp-service-account.json
+k8s-secrets.yml
+azure-secrets.yml
+gcp-secrets.yml
