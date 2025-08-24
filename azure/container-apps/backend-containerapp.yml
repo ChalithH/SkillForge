@@ -1,0 +1,72 @@
+# Azure Container Apps deployment for SkillForge Backend
+# Optimized for cost with minimal resource allocation
+apiVersion: 2023-05-01
+type: Microsoft.App/containerApps
+name: skillforge-backend
+location: australiaeast
+properties:
+  managedEnvironmentId: /subscriptions/3f22450b-8c56-45de-8329-f3c29ec37a55/resourceGroups/skillforge-rg/providers/Microsoft.App/managedEnvironments/skillforge-env
+  configuration:
+    ingress:
+      external: true
+      targetPort: 5000
+      traffic:
+        - weight: 100
+          latestRevision: true
+      corsPolicy:
+        allowedOrigins:
+          - "https://skillforge-frontend-HASH.australiaeast.azurecontainerapps.io"
+        allowedMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        allowedHeaders:
+          - "*"
+    registries:
+      - server: ghcr.io
+        username: chalithh
+        passwordSecretRef: github-pat
+    secrets:
+      - name: github-pat
+        value: ""  # Set via Azure CLI during deployment
+      - name: jwt-secret
+        value: ""  # Set via Azure CLI during deployment
+  template:
+    containers:
+      - image: ghcr.io/chalithh/skillforge-backend:latest
+        name: skillforge-backend
+        resources:
+          cpu: 0.5  # Reduced for cost saving
+          memory: 1Gi  # Reduced for cost saving
+        env:
+          - name: ASPNETCORE_ENVIRONMENT
+            value: "Production"
+          - name: ASPNETCORE_URLS
+            value: "http://+:5000"
+          - name: JwtSettings__SecretKey
+            secretRef: jwt-secret
+          - name: JwtSettings__ExpirationInHours
+            value: "24"
+          - name: ConnectionStrings__DefaultConnection
+            value: "Data Source=/app/skillforge.db"
+          - name: ExchangeBackgroundService__Enabled
+            value: "true"
+          - name: ExchangeBackgroundService__CheckIntervalMinutes
+            value: "10"  # Reduced frequency to save CPU
+        volumeMounts:
+          - volumeName: sqlite-storage
+            mountPath: /app
+    volumes:
+      - name: sqlite-storage
+        storageType: AzureFile
+        storageName: sqlite-storage
+    scale:
+      minReplicas: 1  # Keep 1 replica for database consistency
+      maxReplicas: 5
+      rules:
+        - name: http-scale-rule
+          http:
+            metadata:
+              concurrentRequests: "20"

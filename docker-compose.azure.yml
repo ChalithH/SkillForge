@@ -1,0 +1,74 @@
+# Azure-optimised Docker Compose for local testing
+# Tests the same resource constraints that will be used in Azure Container Apps
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.azure
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Data Source=/app/skillforge.db
+      - JwtSettings__SecretKey=${JWT_SECRET_KEY}
+      - JwtSettings__ExpirationInHours=24
+      - ExchangeBackgroundService__CheckIntervalMinutes=10
+    volumes:
+      - sqlite-data:/app
+    # Resource limits matching Azure Container Apps
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 2
+      start_period: 30s
+    networks:
+      - skillforge-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.azure
+      args:
+        - VITE_API_URL=http://localhost:5000/api
+        - VITE_SIGNALR_URL=http://localhost:5000
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    # Resource limits matching Azure Container Apps
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 512M
+        reservations:
+          cpus: '0.125'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 60s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+    networks:
+      - skillforge-network
+
+volumes:
+  sqlite-data:
+    driver: local
+
+networks:
+  skillforge-network:
+    driver: bridge

@@ -1,0 +1,56 @@
+# Azure-optimised Dockerfile for React Frontend
+# Optimised for minimal resource usage and faster cold starts
+
+# Stage 1: Build environment (using smaller Node image)
+FROM node:20-alpine AS build
+WORKDIR /app
+
+# Build arguments for environment variables
+ARG VITE_API_URL
+ARG VITE_SIGNALR_URL
+
+# Set environment variables for build
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_SIGNALR_URL=$VITE_SIGNALR_URL
+
+# Copy package files and install dependencies (including dev deps for build)
+COPY package*.json ./
+RUN npm ci --silent
+
+# Set NODE_ENV after installing dependencies
+ENV NODE_ENV=production
+
+# Copy source code
+COPY . .
+
+# Build the application (optimised for production, skip type checking for speed)
+RUN npx vite build
+
+# Stage 2: Nginx runtime (minimal Alpine image)
+FROM nginx:alpine AS runtime
+
+# Install curl for health checks (minimal overhead)
+RUN apk add --no-cache curl
+
+# Remove default nginx website
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy optimised nginx configuration
+COPY nginx.azure.conf /etc/nginx/nginx.conf
+
+# Copy built application from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Create nginx cache directory
+RUN mkdir -p /var/cache/nginx/client_temp && \
+    chown -R nginx:nginx /var/cache/nginx
+
+# Expose port
+EXPOSE 80
+
+# Lightweight health check (reduced frequency for cost)
+HEALTHCHECK --interval=60s --timeout=5s --start-period=10s --retries=2 \
+  CMD curl -f http://localhost/health || exit 1
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

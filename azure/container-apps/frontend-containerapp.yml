@@ -1,0 +1,42 @@
+# Azure Container Apps deployment for SkillForge Frontend
+# Optimised for cost with minimal resource allocation
+apiVersion: 2023-05-01
+type: Microsoft.App/containerApps
+name: skillforge-frontend
+location: australiaeast
+properties:
+  managedEnvironmentId: /subscriptions/3f22450b-8c56-45de-8329-f3c29ec37a55/resourceGroups/skillforge-rg/providers/Microsoft.App/managedEnvironments/skillforge-env
+  configuration:
+    ingress:
+      external: true
+      targetPort: 80
+      traffic:
+        - weight: 100
+          latestRevision: true
+    registries:
+      - server: ghcr.io
+        username: chalithh
+        passwordSecretRef: github-pat
+    secrets:
+      - name: github-pat
+        value: ""  # Set via Azure CLI during deployment
+  template:
+    containers:
+      - image: ghcr.io/chalithh/skillforge-frontend:latest
+        name: skillforge-frontend
+        resources:
+          cpu: 0.25  # Reduced for cost saving
+          memory: 0.5Gi  # Reduced for cost saving
+        env:
+          - name: VITE_API_URL
+            value: "https://skillforge-backend-HASH.australiaeast.azurecontainerapps.io/api"
+          - name: VITE_SIGNALR_URL
+            value: "https://skillforge-backend-HASH.australiaeast.azurecontainerapps.io"
+    scale:
+      minReplicas: 0  # Scale to zero when no traffic (additional cost savings)
+      maxReplicas: 3
+      rules:
+        - name: http-scale-rule
+          http:
+            metadata:
+              concurrentRequests: "10"
