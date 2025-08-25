@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SkillForge.Api.Data.Configurations;
 using SkillForge.Api.Models;
 
 namespace SkillForge.Api.Data
@@ -21,11 +22,75 @@ namespace SkillForge.Api.Data
         {
             base.OnModelCreating(modelBuilder);
             
-            // Configure User entity
+            // Apply configurations - this approach is more maintainable
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new SkillConfiguration());
+            modelBuilder.ApplyConfiguration(new CreditTransactionConfiguration());
+            
+            // Provider-specific timestamp configurations
+            ConfigureProviderSpecificFeatures(modelBuilder);
+            
+            // Configure UserSkill relationships and constraints
+            ConfigureUserSkillEntity(modelBuilder);
+            
+            // Configure SkillExchange relationships
+            ConfigureSkillExchangeEntity(modelBuilder);
+            
+            // Configure Review relationships
+            ConfigureReviewEntity(modelBuilder);
+        }
+        
+        private void ConfigureProviderSpecificFeatures(ModelBuilder modelBuilder)
+        {
+            var provider = Database.ProviderName;
+            string utcNowSql;
+            
+            if (provider == "Microsoft.EntityFrameworkCore.SqlServer")
+            {
+                utcNowSql = "GETUTCDATE()";
+            }
+            else if (provider == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            {
+                utcNowSql = "NOW() AT TIME ZONE 'UTC'";
+            }
+            else if (provider == "Microsoft.EntityFrameworkCore.Sqlite")
+            {
+                utcNowSql = "datetime('now')";
+            }
+            else
+            {
+                // Fallback for other providers
+                utcNowSql = "CURRENT_TIMESTAMP";
+            }
+            
+            // Apply UTC timestamp defaults
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
+                .Property(u => u.CreatedAt)
+                .HasDefaultValueSql(utcNowSql);
 
+            modelBuilder.Entity<User>()
+                .Property(u => u.UpdatedAt)
+                .HasDefaultValueSql(utcNowSql);
+
+            modelBuilder.Entity<SkillExchange>()
+                .Property(se => se.CreatedAt)
+                .HasDefaultValueSql(utcNowSql);
+
+            modelBuilder.Entity<SkillExchange>()
+                .Property(se => se.UpdatedAt)
+                .HasDefaultValueSql(utcNowSql);
+
+            modelBuilder.Entity<Review>()
+                .Property(r => r.CreatedAt)
+                .HasDefaultValueSql(utcNowSql);
+
+            modelBuilder.Entity<CreditTransaction>()
+                .Property(ct => ct.CreatedAt)
+                .HasDefaultValueSql(utcNowSql);
+        }
+
+        private void ConfigureUserSkillEntity(ModelBuilder modelBuilder)
+        {
             // Configure UserSkill relationships
             modelBuilder.Entity<UserSkill>()
                 .HasOne(us => us.User)
@@ -39,6 +104,23 @@ namespace SkillForge.Api.Data
                 .HasForeignKey(us => us.SkillId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Configure value constraints
+            modelBuilder.Entity<UserSkill>()
+                .Property(us => us.ProficiencyLevel)
+                .HasDefaultValue(1);
+            
+            // Optimize matching queries with indexes
+            modelBuilder.Entity<UserSkill>()
+                .HasIndex(us => new { us.IsOffering, us.SkillId })
+                .HasDatabaseName("IX_UserSkill_IsOffering_SkillId");
+            
+            modelBuilder.Entity<UserSkill>()
+                .HasIndex(us => new { us.UserId, us.IsOffering })
+                .HasDatabaseName("IX_UserSkill_UserId_IsOffering");
+        }
+
+        private void ConfigureSkillExchangeEntity(ModelBuilder modelBuilder)
+        {
             // Configure SkillExchange relationships
             modelBuilder.Entity<SkillExchange>()
                 .HasOne(se => se.Offerer)
@@ -57,7 +139,10 @@ namespace SkillForge.Api.Data
                 .WithMany()
                 .HasForeignKey(se => se.SkillId)
                 .OnDelete(DeleteBehavior.Restrict);
+        }
 
+        private void ConfigureReviewEntity(ModelBuilder modelBuilder)
+        {
             // Configure Review relationships
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.Exchange)
@@ -77,81 +162,10 @@ namespace SkillForge.Api.Data
                 .HasForeignKey(r => r.ReviewedUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Configure value constraints
-            modelBuilder.Entity<UserSkill>()
-                .Property(us => us.ProficiencyLevel)
-                .HasDefaultValue(1);
-
-            modelBuilder.Entity<User>()
-                .Property(u => u.TimeCredits)
-                .HasDefaultValue(5);
-
             modelBuilder.Entity<Review>()
                 .Property(r => r.Rating)
                 .HasDefaultValue(1);
-
-            // Configure default timestamps
-            modelBuilder.Entity<User>()
-                .Property(u => u.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            modelBuilder.Entity<User>()
-                .Property(u => u.UpdatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            modelBuilder.Entity<SkillExchange>()
-                .Property(se => se.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            modelBuilder.Entity<SkillExchange>()
-                .Property(se => se.UpdatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            modelBuilder.Entity<Review>()
-                .Property(r => r.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            // Configure CreditTransaction relationships
-            modelBuilder.Entity<CreditTransaction>()
-                .HasOne(ct => ct.User)
-                .WithMany()
-                .HasForeignKey(ct => ct.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<CreditTransaction>()
-                .HasOne(ct => ct.RelatedUser)
-                .WithMany()
-                .HasForeignKey(ct => ct.RelatedUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<CreditTransaction>()
-                .HasOne(ct => ct.Exchange)
-                .WithMany()
-                .HasForeignKey(ct => ct.ExchangeId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<CreditTransaction>()
-                .Property(ct => ct.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            // Create index for efficient querying
-            modelBuilder.Entity<CreditTransaction>()
-                .HasIndex(ct => new { ct.UserId, ct.CreatedAt })
-                .HasDatabaseName("IX_CreditTransaction_UserId_CreatedAt");
-            
-            // Optimize matching queries with indexes
-            modelBuilder.Entity<UserSkill>()
-                .HasIndex(us => new { us.IsOffering, us.SkillId })
-                .HasDatabaseName("IX_UserSkill_IsOffering_SkillId");
-            
-            modelBuilder.Entity<UserSkill>()
-                .HasIndex(us => new { us.UserId, us.IsOffering })
-                .HasDatabaseName("IX_UserSkill_UserId_IsOffering");
-            
-            modelBuilder.Entity<Skill>()
-                .HasIndex(s => s.Category)
-                .HasDatabaseName("IX_Skill_Category");
-            
+                
             modelBuilder.Entity<Review>()
                 .HasIndex(r => r.ReviewedUserId)
                 .HasDatabaseName("IX_Review_ReviewedUserId");

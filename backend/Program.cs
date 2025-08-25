@@ -70,14 +70,22 @@ if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Connection string 'DefaultConnection' not found. Please set the ConnectionStrings__DefaultConnection environment variable.");
 }
 
-// Use SQLite for production deployment (Azure SQL auth issues)
+// Configure database provider based on connection string
 if (connectionString.Contains("Data Source="))
 {
+    // SQLite
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlite(connectionString));
 }
+else if (connectionString.Contains("Host=") || connectionString.Contains("Server=") && connectionString.Contains("Database=") && !connectionString.Contains("TrustServerCertificate"))
+{
+    // PostgreSQL
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
 else
 {
+    // SQL Server
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(connectionString));
 }
@@ -267,3 +275,6 @@ catch (Exception ex)
 }
 
 app.Run();
+
+// Make Program accessible for integration testing
+public partial class Program { }
