@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkillForge.Api", "backend\SkillForge.Api.csproj", "{BDCF3907-48DE-41E4-90A1-F985391C70AF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkillForge.Tests", "SkillForge.Tests\SkillForge.Tests.csproj", "{F74D34A6-6F40-43DE-87C7-983ED8E8915A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{BDCF3907-48DE-41E4-90A1-F985391C70AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDCF3907-48DE-41E4-90A1-F985391C70AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDCF3907-48DE-41E4-90A1-F985391C70AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F74D34A6-6F40-43DE-87C7-983ED8E8915A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F74D34A6-6F40-43DE-87C7-983ED8E8915A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F74D34A6-6F40-43DE-87C7-983ED8E8915A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F74D34A6-6F40-43DE-87C7-983ED8E8915A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
