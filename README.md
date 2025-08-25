@@ -25,16 +25,16 @@ The platform connects people based on complementary skills and learning interest
 ### Backend
 - **.NET 8** Web API
 - **Entity Framework Core** with comprehensive data modeling
-- **SQL Server** database with optimised schema design
+- **Multi-database support** (PostgreSQL, SQL Server, SQLite) with provider-agnostic architecture
 - **JWT Authentication** for secure user management
 - **SignalR** for real-time presence and activity tracking
 - **RESTful API design** with comprehensive CRUD operations
 
 ### Infrastructure
 - **Docker** containerisation with multi-stage builds
-- **Docker Compose** for local development environment
+- **Docker Compose** with flexible database profiles
 - **Environment-based configuration** management
-- **SQL Server** containerised for development
+- **PostgreSQL** (default) and **SQL Server** (enterprise) support
 
 ## Key Features
 
@@ -88,19 +88,30 @@ The platform connects people based on complementary skills and learning interest
 
 ### Quick Start with Docker
 ```bash
-# Clone and start (uses working defaults)
+# Clone and start with PostgreSQL (recommended)
 git clone https://github.com/ChalithH/SkillForge.git
 cd SkillForge
-cp .env.example .env
+cp .env.postgresql .env
 docker-compose up
 
 # Access the application
 # Frontend: http://localhost:3000  
 # Backend API: http://localhost:5000
-# Database: localhost:1433
+# Database: localhost:5432 (PostgreSQL)
 ```
 
-*The `.env.example` file contains working defaults for local development. No editing required, though values can be customised if desired.*
+### Database Profiles
+Choose your development database based on your needs:
+
+```bash
+# PostgreSQL (recommended - production parity)
+cp .env.postgresql .env
+docker-compose up
+
+# SQL Server (enterprise features)
+cp .env.sqlserver .env  
+docker-compose --profile sqlserver up
+```
 
 ### Development Workflow
 
@@ -125,6 +136,28 @@ npm run dev  # Or edit files directly - hot reload works automatically
 - Use VS Code Dev Containers for both frontend and backend
 - Complete environment isolation with all tooling in containers
 - Slower performance but maximum consistency
+
+### Testing
+
+The project uses a multi-tier testing strategy:
+
+```bash
+# Unit tests only (fast - in-memory database, no external dependencies)
+dotnet test --filter "FullyQualifiedName~CreditServiceTests"
+
+# Integration tests (PostgreSQL - production parity)
+docker-compose -f docker-compose.test.yml up -d postgres-test
+dotnet test --filter "FullyQualifiedName~SmokeTests"
+
+# All tests (requires PostgreSQL container)
+docker-compose -f docker-compose.test.yml up -d postgres-test
+dotnet test
+```
+
+**Testing Architecture:**
+- **Unit Tests**: In-memory Entity Framework for speed and isolation
+- **Integration Tests**: PostgreSQL container for production parity
+- **Smoke Tests**: Critical path validation (health checks, auth, database)
 
 ## Technical Implementation Highlights
 
