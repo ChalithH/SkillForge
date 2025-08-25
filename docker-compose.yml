@@ -8,14 +8,14 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SkillForge;User=sa;Password=${SA_PASSWORD};TrustServerCertificate=true
-      - JwtSettings__SecretKey=${JWT_SECRET_KEY}
       - JwtSettings__ExpirationInHours=24
+    env_file:
+      - .env
     volumes:
       - .:/workspace
       - backend-nuget-cache:/root/.nuget/packages
     depends_on:
-      sqlserver:
+      postgres-dev:
         condition: service_healthy
     networks:
       - skillforge-network
@@ -35,8 +35,37 @@ services:
     networks:
       - skillforge-network
 
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: skillforge-postgres-dev
+    profiles: ["postgres", "default"]
+    environment:
+      POSTGRES_DB: skillforge_dev
+      POSTGRES_USER: skillforge_test
+      POSTGRES_PASSWORD: test_password_123
+      POSTGRES_HOST_AUTH_METHOD: md5
+    ports:
+      - "5432:5432"  # Standard PostgreSQL port
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skillforge_test -d skillforge_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - skillforge-network
+    # Optimise for development - good performance, reliable
+    command: >
+      postgres
+      -c max_connections=100
+      -c shared_buffers=128MB
+      -c effective_cache_size=256MB
+      -c wal_buffers=8MB
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    profiles: ["sqlserver"]
     ports:
       - "1433:1433"
     environment:
@@ -56,6 +85,7 @@ services:
       - skillforge-network
 
 volumes:
+  postgres-dev-data:
   sqlserver-data:
   backend-nuget-cache:
 
