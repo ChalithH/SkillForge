@@ -118,15 +118,29 @@ builder.Services.AddAuthentication(x =>
     };
     
     // Enable JWT authentication for SignalR
+    // Note: SignalR WebSockets cannot use Authorization headers, so query parameter is the standard approach
     x.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
-            var accessToken = context.Request.Query["access_token"];
+            // Only accept tokens for SignalR hub endpoints
             var path = context.HttpContext.Request.Path;
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            if (path.StartsWithSegments("/hubs"))
             {
-                context.Token = accessToken;
+                // Try Authorization header first (for HTTP requests)
+                var accessToken = context.Request.Headers.Authorization
+                    .FirstOrDefault()?.Split(" ").Last();
+                
+                // Fall back to query parameter (required for WebSocket connections)
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    accessToken = context.Request.Query["access_token"];
+                }
+                
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    context.Token = accessToken;
+                }
             }
             return Task.CompletedTask;
         }

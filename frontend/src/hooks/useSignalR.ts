@@ -69,14 +69,15 @@ export const useSignalR = () => {
       // Construct SignalR URL - use separate VITE_SIGNALR_URL for Docker networking
       // or fallback to localhost for development
       const signalRBaseUrl = import.meta.env.VITE_SIGNALR_URL || 'http://localhost:5000';
-      const signalRUrl = `${signalRBaseUrl}/hubs/notification?access_token=${token}`;
+      const signalRUrl = `${signalRBaseUrl}/hubs/notification`;
       
-      console.log('SignalR connecting to:', signalRUrl.replace(/access_token=[^&]*/, 'access_token=***'));
+      console.log('SignalR connecting to:', signalRUrl);
       
       const newConnection = new signalR.HubConnectionBuilder()
         .withUrl(signalRUrl, {
           skipNegotiation: true,
           transport: signalR.HttpTransportType.WebSockets,
+          accessTokenFactory: () => token,
         })
         .withAutomaticReconnect({
           nextRetryDelayInMilliseconds: (retryContext: signalR.RetryContext) => {
@@ -88,7 +89,7 @@ export const useSignalR = () => {
             return 30000;
           }
         })
-        .configureLogging(signalR.LogLevel.Information)
+        .configureLogging(import.meta.env.MODE === 'production' ? signalR.LogLevel.Error : signalR.LogLevel.Warning)
         .build();
 
       // Set up event handlers
