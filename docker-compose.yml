@@ -1,5 +1,6 @@
 services:
   backend:
+    #user: "1000:1000"
     build:
       context: .
       dockerfile: backend/Dockerfile.dev
@@ -38,7 +39,7 @@ services:
   postgres-dev:
     image: postgres:15-alpine
     container_name: skillforge-postgres-dev
-    profiles: ["postgres", "default"]
+    # profiles: ["postgres", "default"]
     environment:
       POSTGRES_DB: skillforge_dev
       POSTGRES_USER: skillforge_test
