@@ -57,38 +57,67 @@ namespace SkillForge.Api.Services
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            var now = DateTime.UtcNow;
-            
-            // Find all accepted exchanges that should have completed
-            var pastExchanges = await context.SkillExchanges
-                .Include(e => e.Offerer)
-                .Include(e => e.Learner)
-                .Include(e => e.Skill)
-                .Where(e => e.Status == ExchangeStatus.Accepted)
-                .Where(e => e.ScheduledAt.AddHours(e.Duration).AddHours(_options.GracePeriodHours) < now)
-                .Take(_options.BatchSize)
-                .ToListAsync(cancellationToken);
-
-            if (!pastExchanges.Any())
+            try
             {
-                _logger.LogDebug("No past exchanges found to auto-complete.");
+                // Check if database tables exist by attempting to connect and verify schema
+                var canConnect = await context.Database.CanConnectAsync(cancellationToken);
+                if (!canConnect)
+                {
+                    _logger.LogDebug("Database connection not available, skipping background processing cycle.");
+                    return;
+                }
+
+                var now = DateTime.UtcNow;
+                
+                // Find all accepted exchanges that should have completed
+                var pastExchanges = await context.SkillExchanges
+                    .Include(e => e.Offerer)
+                    .Include(e => e.Learner)
+                    .Include(e => e.Skill)
+                    .Where(e => e.Status == ExchangeStatus.Accepted)
+                    .Where(e => e.ScheduledAt.AddHours(e.Duration).AddHours(_options.GracePeriodHours) < now)
+                    .Take(_options.BatchSize)
+                    .ToListAsync(cancellationToken);
+
+                if (!pastExchanges.Any())
+                {
+                    _logger.LogDebug("No past exchanges found to auto-complete.");
+                    return;
+                }
+
+                _logger.LogInformation($"Found {pastExchanges.Count} exchanges to auto-complete.");
+
+                foreach (var exchange in pastExchanges)
+                {
+                    try
+                    {
+                        await AutoCompleteExchangeAsync(context, exchange, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Failed to auto-complete exchange {exchange.Id}");
+                    }
+                }
+            }
+            catch (Exception ex) when (IsTableMissingException(ex))
+            {
+                _logger.LogDebug("Database tables not yet created, skipping background processing cycle.");
                 return;
             }
-
-            _logger.LogInformation($"Found {pastExchanges.Count} exchanges to auto-complete.");
-
-            foreach (var exchange in pastExchanges)
-            {
-                try
-                {
-                    await AutoCompleteExchangeAsync(context, exchange, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to auto-complete exchange {exchange.Id}");
-                }
-            }
         }
+
+        private static bool IsTableMissingException(Exception ex)
+        {
+            // Handle different database providers' "table doesn't exist" messages
+            var message = ex.Message?.ToLowerInvariant() ?? string.Empty;
+            
+            return message.Contains("does not exist") || 
+                   message.Contains("doesn't exist") ||
+                   message.Contains("no such table") ||
+                   message.Contains("invalid object name") ||
+                   ex.InnerException != null && IsTableMissingException(ex.InnerException);
+        }
+
 
         private async Task AutoCompleteExchangeAsync(
             ApplicationDbContext context,
