@@ -29,13 +29,6 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Get latest image tags
       id: image-tags
       run: |
@@ -43,9 +36,9 @@ jobs:
         COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
         SHORT_SHA=${COMMIT_SHA:0:7}
         
-        # Define image references
-        BACKEND_IMAGE="ghcr.io/${{ github.repository }}-backend:main"
-        FRONTEND_IMAGE="ghcr.io/${{ github.repository }}-frontend:main"
+        # Define Artifact Registry image references
+        BACKEND_IMAGE="australia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/skillforge-repo/skillforge-backend:main"
+        FRONTEND_IMAGE="australia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/skillforge-repo/skillforge-frontend:main"
         
         echo "backend-image=$BACKEND_IMAGE" >> $GITHUB_OUTPUT
         echo "frontend-image=$FRONTEND_IMAGE" >> $GITHUB_OUTPUT
@@ -82,34 +75,10 @@ jobs:
         echo "backend-url=$BACKEND_URL" >> $GITHUB_OUTPUT
         echo "Backend deployed at: $BACKEND_URL"
 
-    - name: Rebuild Frontend with Production URLs
-      run: |
-        # Build frontend with correct production environment variables
-        gcloud builds submit \
-          --config /dev/stdin \
-          --substitutions _BACKEND_URL=${{ steps.backend-url.outputs.backend-url }} \
-          frontend/ <<EOF
-        steps:
-        - name: 'gcr.io/cloud-builders/docker'
-          args:
-          - 'build'
-          - '-f'
-          - 'Dockerfile.azure'
-          - '--build-arg'
-          - 'VITE_API_URL=\${_BACKEND_URL}/api'
-          - '--build-arg'
-          - 'VITE_SIGNALR_URL=\${_BACKEND_URL}'
-          - '-t'
-          - 'australia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/skillforge-repo/skillforge-frontend:production'
-          - '.'
-        images:
-        - 'australia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/skillforge-repo/skillforge-frontend:production'
-        EOF
-
     - name: Deploy Frontend to Cloud Run
       run: |
         gcloud run deploy skillforge-frontend \
-          --image australia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/skillforge-repo/skillforge-frontend:production \
+          --image ${{ steps.image-tags.outputs.frontend-image }} \
           --region australia-southeast1 \
           --platform managed \
           --allow-unauthenticated \
