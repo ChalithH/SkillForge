@@ -15,7 +15,7 @@ ENV VITE_SIGNALR_URL=$VITE_SIGNALR_URL
 
 # Copy package files and install dependencies (including dev deps for build)
 COPY package*.json ./
-RUN npm ci --silent
+RUN npm ci
 
 # Set NODE_ENV after installing dependencies
 ENV NODE_ENV=production
