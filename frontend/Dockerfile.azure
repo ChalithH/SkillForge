@@ -15,7 +15,24 @@ ENV VITE_SIGNALR_URL=$VITE_SIGNALR_URL
 
 # Copy package files and install dependencies (including dev deps for build)
 COPY package*.json ./
-RUN npm ci
+
+# Configure npm for better rate limit handling
+RUN npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-retries 5 && \
+    npm config set fetch-timeout 300000
+
+# Install dependencies with retry logic for rate limiting
+RUN for i in 1 2 3 4 5; do \
+      echo "npm ci attempt $i/5" && \
+      npm ci && break || { \
+        echo "npm ci failed, attempt $i/5" && \
+        if [ $i -eq 5 ]; then \
+          echo "All npm ci attempts failed" && exit 1; \
+        fi && \
+        sleep $((i * 10)); \
+      }; \
+    done
 
 # Set NODE_ENV after installing dependencies
 ENV NODE_ENV=production
