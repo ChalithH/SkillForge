@@ -147,15 +147,25 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      packages: read
 
     steps:
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ needs.build-backend.outputs.registry }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Extract primary image tag
       id: extract-tag
       run: |
         # Get the first line/tag from the multi-line tags output
         FIRST_TAG=$(echo "${{ needs.build-backend.outputs.image-tags }}" | head -n1)
         echo "image-tag=$FIRST_TAG" >> $GITHUB_OUTPUT
-        echo "Scanning image: $FIRST_TAG"
+        echo "Image reference to scan: $FIRST_TAG"
+        echo "All available tags:"
+        echo "${{ needs.build-backend.outputs.image-tags }}"
+        echo "Registry: ${{ needs.build-backend.outputs.registry }}"
 
     - name: Run Trivy vulnerability scanner - Backend
       uses: aquasecurity/trivy-action@master
