@@ -7,6 +7,7 @@ on:
       - 'backend/**'
       - 'frontend/**'
       - '.github/workflows/build-and-push.yml'
+      - '.github/workflows/deploy-gcp.yml'
   pull_request:
     branches: [ main ]
   workflow_dispatch:
