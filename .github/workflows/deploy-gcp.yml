@@ -56,15 +56,17 @@ jobs:
           --platform managed \
           --allow-unauthenticated \
           --port 5000 \
-          --memory 512Mi \
+          --memory 1Gi \
           --cpu 1 \
-          --concurrency 100 \
+          --concurrency 1000 \
           --min-instances 0 \
           --max-instances 10 \
-          --set-env-vars="JWT_SECRET_KEY=${{ secrets.PRODUCTION_JWT_SECRET_KEY }}" \
-          --set-env-vars="ASPNETCORE_ENVIRONMENT=Production" \
-          --set-env-vars="CORS_ALLOWED_ORIGINS=https://skillforge-frontend-992347519954.australia-southeast1.run.app" \
           --timeout 300 \
+          --cpu-throttling \
+          --execution-environment gen2 \
+          --add-cloudsql-instances ${{ secrets.GCP_PROJECT_ID }}:australia-southeast1:skillforge-db \
+          --set-env-vars="ASPNETCORE_ENVIRONMENT=Production,ASPNETCORE_URLS=http://+:5000,JwtSettings__ExpirationInHours=24,ExchangeBackgroundService__Enabled=true,ExchangeBackgroundService__CheckIntervalMinutes=15" \
+          --set-secrets="ConnectionStrings__DefaultConnection=db-connection-string:latest,JwtSettings__SecretKey=jwt-secret:latest" \
           --quiet
 
     - name: Get Backend URL
@@ -84,12 +86,14 @@ jobs:
           --platform managed \
           --allow-unauthenticated \
           --port 80 \
-          --memory 256Mi \
+          --memory 512Mi \
           --cpu 1 \
-          --concurrency 100 \
+          --concurrency 1000 \
           --min-instances 0 \
           --max-instances 5 \
           --timeout 60 \
+          --cpu-throttling \
+          --execution-environment gen2 \
           --quiet
 
     - name: Get Frontend URL
