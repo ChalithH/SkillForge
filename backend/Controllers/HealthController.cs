@@ -23,18 +23,19 @@ namespace SkillForge.Api.Controllers
                 status = "healthy",
                 service = "SkillForge API", 
                 timestamp = DateTime.UtcNow,
+                version = "1.0.0",
                 database = "unknown"  // Default value
             };
 
             try 
             {
                 await _context.Database.CanConnectAsync();
-                result = new { result.status, result.service, result.timestamp, database = "connected" };
+                result = new { result.status, result.service, result.timestamp, result.version, database = "connected" };
             }
             catch (Exception ex)
             {
                 // Keep default "unknown" value for database
-                result = new { result.status, result.service, result.timestamp, database = "disconnected" };
+                result = new { result.status, result.service, result.timestamp, result.version, database = "disconnected" };
             }
 
             return Ok(result);
