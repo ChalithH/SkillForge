@@ -1,0 +1,161 @@
+name: Deploy to Google Cloud Run
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Container Images"]
+    types:
+      - completed
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get latest image tags
+      id: image-tags
+      run: |
+        # Get the latest commit SHA from the successful workflow
+        COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
+        SHORT_SHA=${COMMIT_SHA:0:7}
+        
+        # Define image references
+        BACKEND_IMAGE="ghcr.io/${{ github.repository }}-backend:main"
+        FRONTEND_IMAGE="ghcr.io/${{ github.repository }}-frontend:main"
+        
+        echo "backend-image=$BACKEND_IMAGE" >> $GITHUB_OUTPUT
+        echo "frontend-image=$FRONTEND_IMAGE" >> $GITHUB_OUTPUT
+        echo "commit-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+        
+        echo "Backend image: $BACKEND_IMAGE"
+        echo "Frontend image: $FRONTEND_IMAGE"
+        echo "Commit SHA: $SHORT_SHA"
+
+    - name: Deploy Backend to Cloud Run
+      run: |
+        gcloud run deploy skillforge-backend \
+          --image ${{ steps.image-tags.outputs.backend-image }} \
+          --region australia-southeast1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 5000 \
+          --memory 512Mi \
+          --cpu 0.5 \
+          --min-instances 0 \
+          --max-instances 10 \
+          --set-env-vars="JWT_SECRET_KEY=${{ secrets.PRODUCTION_JWT_SECRET_KEY }}" \
+          --set-env-vars="ASPNETCORE_ENVIRONMENT=Production" \
+          --set-env-vars="CORS_ALLOWED_ORIGINS=https://skillforge-frontend-992347519954.australia-southeast1.run.app" \
+          --timeout 300 \
+          --quiet
+
+    - name: Get Backend URL
+      id: backend-url
+      run: |
+        BACKEND_URL=$(gcloud run services describe skillforge-backend \
+          --region australia-southeast1 \
+          --format 'value(status.url)')
+        echo "backend-url=$BACKEND_URL" >> $GITHUB_OUTPUT
+        echo "Backend deployed at: $BACKEND_URL"
+
+    - name: Rebuild Frontend with Production URLs
+      run: |
+        # Build frontend with correct production environment variables
+        gcloud builds submit \
+          --config /dev/stdin \
+          --substitutions _BACKEND_URL=${{ steps.backend-url.outputs.backend-url }} \
+          frontend/ <<EOF
+        steps:
+        - name: 'gcr.io/cloud-builders/docker'
+          args:
+          - 'build'
+          - '-f'
+          - 'Dockerfile.azure'
+          - '--build-arg'
+          - 'VITE_API_URL=\${_BACKEND_URL}/api'
+          - '--build-arg'
+          - 'VITE_SIGNALR_URL=\${_BACKEND_URL}'
+          - '-t'
+          - 'australia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/skillforge-repo/skillforge-frontend:production'
+          - '.'
+        images:
+        - 'australia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/skillforge-repo/skillforge-frontend:production'
+        EOF
+
+    - name: Deploy Frontend to Cloud Run
+      run: |
+        gcloud run deploy skillforge-frontend \
+          --image australia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/skillforge-repo/skillforge-frontend:production \
+          --region australia-southeast1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 80 \
+          --memory 256Mi \
+          --cpu 0.25 \
+          --min-instances 0 \
+          --max-instances 5 \
+          --timeout 60 \
+          --quiet
+
+    - name: Get Frontend URL
+      id: frontend-url
+      run: |
+        FRONTEND_URL=$(gcloud run services describe skillforge-frontend \
+          --region australia-southeast1 \
+          --format 'value(status.url)')
+        echo "frontend-url=$FRONTEND_URL" >> $GITHUB_OUTPUT
+        echo "Frontend deployed at: $FRONTEND_URL"
+
+    - name: Verify Deployment
+      run: |
+        # Test backend health endpoint
+        echo "Testing backend health..."
+        curl -f ${{ steps.backend-url.outputs.backend-url }}/health || exit 1
+        
+        # Test frontend is accessible
+        echo "Testing frontend accessibility..."
+        curl -f ${{ steps.frontend-url.outputs.frontend-url }} > /dev/null || exit 1
+        
+        echo "Deployment verification successful!"
+
+    - name: Update CORS Configuration
+      run: |
+        # Update backend CORS to allow the new frontend URL
+        gcloud run services update skillforge-backend \
+          --region australia-southeast1 \
+          --set-env-vars="CORS_ALLOWED_ORIGINS=${{ steps.frontend-url.outputs.frontend-url }}" \
+          --quiet
+
+    - name: Deployment Summary
+      run: |
+        echo "Deployment Complete!"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Backend:  ${{ steps.backend-url.outputs.backend-url }}"
+        echo "Frontend: ${{ steps.frontend-url.outputs.frontend-url }}"
+        echo "Commit:   ${{ steps.image-tags.outputs.commit-sha }}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Your application is now live!"
