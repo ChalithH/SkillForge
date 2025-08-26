@@ -1,0 +1,31 @@
+# Cloud Build configuration for SkillForge Frontend
+# Builds the frontend with proper environment variables as build arguments
+
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'build'
+  - '-f'
+  - 'Dockerfile.azure'
+  - '--build-arg'
+  - 'VITE_API_URL=${_BACKEND_URL}/api'
+  - '--build-arg' 
+  - 'VITE_SIGNALR_URL=${_BACKEND_URL}'
+  - '-t'
+  - 'australia-southeast1-docker.pkg.dev/$PROJECT_ID/skillforge-repo/skillforge-frontend:latest'
+  - '.'
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'australia-southeast1-docker.pkg.dev/$PROJECT_ID/skillforge-repo/skillforge-frontend:latest']
+
+images:
+- 'australia-southeast1-docker.pkg.dev/$PROJECT_ID/skillforge-repo/skillforge-frontend:latest'
+
+# Substitutions for dynamic backend URL
+substitutions:
+  _BACKEND_URL: 'https://skillforge-backend-xaj3izacta-ts.a.run.app'
+
+# Options for cost optimisation
+options:
+  machineType: 'E2_HIGHCPU_8'  # Fast build for reduced build time costs
+  diskSizeGb: '10'
