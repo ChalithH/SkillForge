@@ -187,8 +187,9 @@ jobs:
     - name: Extract primary image tag
       id: extract-tag
       run: |
-        # Use GHCR image for security scanning (simpler and more reliable)
-        GHCR_IMAGE="ghcr.io/${{ github.repository }}-backend:main"
+        # Use GHCR image for security scanning (convert to lowercase for GHCR)
+        REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+        GHCR_IMAGE="ghcr.io/${REPO_LOWER}-backend:main"
         echo "image-tag=$GHCR_IMAGE" >> $GITHUB_OUTPUT
         echo "Image reference to scan: $GHCR_IMAGE"
         echo "Using GHCR image for security scanning"
