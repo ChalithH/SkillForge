@@ -85,8 +85,8 @@ jobs:
           --allow-unauthenticated \
           --port 80 \
           --memory 256Mi \
-          --cpu 0.25 \
-          --concurrency 1 \
+          --cpu 1 \
+          --concurrency 100 \
           --min-instances 0 \
           --max-instances 5 \
           --timeout 60 \
