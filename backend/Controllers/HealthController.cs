@@ -23,7 +23,7 @@ namespace SkillForge.Api.Controllers
                 status = "healthy",
                 service = "SkillForge API", 
                 timestamp = DateTime.UtcNow,
-                version = "1.0.0",
+                version = "1.0.1",
                 database = "unknown"  // Default value
             };
 
