@@ -187,13 +187,11 @@ jobs:
     - name: Extract primary image tag
       id: extract-tag
       run: |
-        # Get the first line/tag from the multi-line tags output
-        FIRST_TAG=$(echo "${{ needs.build-backend.outputs.image-tags }}" | head -n1)
-        echo "image-tag=$FIRST_TAG" >> $GITHUB_OUTPUT
-        echo "Image reference to scan: $FIRST_TAG"
-        echo "All available tags:"
-        echo "${{ needs.build-backend.outputs.image-tags }}"
-        echo "Registry: ${{ needs.build-backend.outputs.registry }}"
+        # Use GHCR image for security scanning (simpler and more reliable)
+        GHCR_IMAGE="ghcr.io/${{ github.repository }}-backend:main"
+        echo "image-tag=$GHCR_IMAGE" >> $GITHUB_OUTPUT
+        echo "Image reference to scan: $GHCR_IMAGE"
+        echo "Using GHCR image for security scanning"
 
     - name: Run Trivy vulnerability scanner - Backend
       uses: aquasecurity/trivy-action@master
