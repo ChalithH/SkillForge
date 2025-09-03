@@ -17,6 +17,7 @@ namespace SkillForge.Api.Services
         Task<ExchangeDto?> MarkAsNoShowAsync(int exchangeId, int userId, string? notes = null);
         Task<ExchangeDto?> UpdateExchangeAsync(int exchangeId, int userId, UpdateExchangeDto dto);
         Task<bool> CanUserModifyExchangeAsync(int exchangeId, int userId);
+        Task<IEnumerable<ExchangeStatusHistory>> GetExchangeStatusHistoryAsync(int exchangeId);
     }
 
     public class ExchangeService : IExchangeService
@@ -82,6 +83,9 @@ namespace SkillForge.Api.Services
 
             _context.SkillExchanges.Add(exchange);
             await _context.SaveChangesAsync();
+
+            // Create initial status history record
+            await CreateStatusHistoryAsync(exchange.Id, null, ExchangeStatus.Pending, learnerId, "Exchange created");
 
             return await GetExchangeDtoAsync(exchange.Id);
         }
@@ -151,7 +155,9 @@ namespace SkillForge.Api.Services
             }
             exchange.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            // Create status history record
+            await CreateStatusHistoryAsync(exchangeId, ExchangeStatus.Pending, ExchangeStatus.Accepted, userId, notes ?? "Exchange accepted");
+
             _logger.LogInformation($"Exchange {exchangeId} accepted by user {userId}");
 
             return await GetExchangeDtoAsync(exchangeId);
@@ -184,7 +190,9 @@ namespace SkillForge.Api.Services
             }
             exchange.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            // Create status history record
+            await CreateStatusHistoryAsync(exchangeId, ExchangeStatus.Pending, ExchangeStatus.Rejected, userId, notes ?? "Exchange rejected");
+
             _logger.LogInformation($"Exchange {exchangeId} rejected by user {userId}");
 
             return await GetExchangeDtoAsync(exchangeId);
@@ -192,9 +200,34 @@ namespace SkillForge.Api.Services
 
         public async Task<ExchangeDto?> CancelExchangeAsync(int exchangeId, int userId, string? notes = null)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
-            try
+            // Check if we're using in-memory database (for testing)
+            bool isInMemoryDb = _context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory";
+            
+            if (isInMemoryDb)
             {
+                // In-memory database doesn't support transactions
+                return await CancelExchangeInternalAsync(exchangeId, userId, notes);
+            }
+            else
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+                try
+                {
+                    var result = await CancelExchangeInternalAsync(exchangeId, userId, notes);
+                    await transaction.CommitAsync();
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, $"Error cancelling exchange {exchangeId}");
+                    throw;
+                }
+            }
+        }
+
+        private async Task<ExchangeDto?> CancelExchangeInternalAsync(int exchangeId, int userId, string? notes = null)
+        {
                 var exchange = await _context.SkillExchanges
                     .Include(e => e.Offerer)
                     .Include(e => e.Learner)
@@ -225,6 +258,7 @@ namespace SkillForge.Api.Services
                     _logger.LogWarning($"Exchange {exchangeId} cancelled within 24 hours of scheduled time by user {userId}");
                 }
 
+                var fromStatus = exchange.Status; // Capture the current status before changing
                 exchange.Status = ExchangeStatus.Cancelled;
                 if (!string.IsNullOrEmpty(notes))
                 {
@@ -232,26 +266,44 @@ namespace SkillForge.Api.Services
                 }
                 exchange.UpdatedAt = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                // Create status history record
+                await CreateStatusHistoryAsync(exchangeId, fromStatus, ExchangeStatus.Cancelled, userId, notes ?? "Exchange cancelled");
                 
                 _logger.LogInformation($"Exchange {exchangeId} cancelled by user {userId}");
 
                 return await GetExchangeDtoAsync(exchangeId);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, $"Error cancelling exchange {exchangeId}");
-                throw;
-            }
         }
 
         public async Task<ExchangeDto?> CompleteExchangeAsync(int exchangeId, int userId)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
-            try
+            // Check if we're using in-memory database (for testing)
+            bool isInMemoryDb = _context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory";
+            
+            if (isInMemoryDb)
             {
+                // In-memory database doesn't support transactions
+                return await CompleteExchangeInternalAsync(exchangeId, userId);
+            }
+            else
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+                try
+                {
+                    var result = await CompleteExchangeInternalAsync(exchangeId, userId);
+                    await transaction.CommitAsync();
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, $"Error completing exchange {exchangeId}");
+                    throw;
+                }
+            }
+        }
+
+        private async Task<ExchangeDto?> CompleteExchangeInternalAsync(int exchangeId, int userId)
+        {
                 // Use SELECT FOR UPDATE pattern by tracking the entity
                 var exchange = await _context.SkillExchanges
                     .Include(e => e.Offerer)
@@ -339,20 +391,13 @@ namespace SkillForge.Api.Services
                 _context.CreditTransactions.Add(fromTransaction);
                 _context.CreditTransactions.Add(toTransaction);
 
-                // Save all changes within the transaction
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                // Create status history record
+                await CreateStatusHistoryAsync(exchangeId, ExchangeStatus.Accepted, ExchangeStatus.Completed, userId, 
+                    $"Exchange completed with credit transfer of {creditsToTransfer} time credits");
 
                 _logger.LogInformation($"Exchange {exchangeId} completed. Transferred {creditsToTransfer} credits from user {learner.Id} to user {offerer.Id}");
 
                 return await GetExchangeDtoAsync(exchangeId);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, $"Error completing exchange {exchangeId}");
-                throw;
-            }
         }
 
         public async Task<ExchangeDto?> MarkAsNoShowAsync(int exchangeId, int userId, string? notes = null)
@@ -388,7 +433,9 @@ namespace SkillForge.Api.Services
             }
             exchange.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            // Create status history record
+            await CreateStatusHistoryAsync(exchangeId, ExchangeStatus.Accepted, ExchangeStatus.NoShow, userId, notes ?? "Exchange marked as no-show");
+
             _logger.LogInformation($"Exchange {exchangeId} marked as no-show by user {userId}");
 
             return await GetExchangeDtoAsync(exchangeId);
@@ -525,6 +572,31 @@ namespace SkillForge.Api.Services
                 CanReview = canReview,
                 HasReviewed = hasReviewed
             };
+        }
+
+        public async Task<IEnumerable<ExchangeStatusHistory>> GetExchangeStatusHistoryAsync(int exchangeId)
+        {
+            return await _context.ExchangeStatusHistories
+                .Where(h => h.ExchangeId == exchangeId)
+                .Include(h => h.ChangedByUser)
+                .OrderBy(h => h.ChangedAt)
+                .ToListAsync();
+        }
+
+        private async Task CreateStatusHistoryAsync(int exchangeId, ExchangeStatus? fromStatus, ExchangeStatus toStatus, int changedBy, string? reason = null)
+        {
+            var history = new ExchangeStatusHistory
+            {
+                ExchangeId = exchangeId,
+                FromStatus = fromStatus,
+                ToStatus = toStatus,
+                ChangedBy = changedBy,
+                ChangedAt = DateTime.UtcNow,
+                Reason = reason
+            };
+
+            _context.ExchangeStatusHistories.Add(history);
+            await _context.SaveChangesAsync();
         }
     }
 }

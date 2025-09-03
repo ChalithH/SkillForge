@@ -17,6 +17,7 @@ namespace SkillForge.Api.Data
         public DbSet<SkillExchange> SkillExchanges { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<CreditTransaction> CreditTransactions { get; set; }
+        public DbSet<ExchangeStatusHistory> ExchangeStatusHistories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +39,9 @@ namespace SkillForge.Api.Data
             
             // Configure Review relationships
             ConfigureReviewEntity(modelBuilder);
+            
+            // Configure ExchangeStatusHistory relationships
+            ConfigureExchangeStatusHistoryEntity(modelBuilder);
         }
         
         private void ConfigureProviderSpecificFeatures(ModelBuilder modelBuilder)
@@ -86,6 +90,10 @@ namespace SkillForge.Api.Data
 
             modelBuilder.Entity<CreditTransaction>()
                 .Property(ct => ct.CreatedAt)
+                .HasDefaultValueSql(utcNowSql);
+
+            modelBuilder.Entity<ExchangeStatusHistory>()
+                .Property(esh => esh.ChangedAt)
                 .HasDefaultValueSql(utcNowSql);
         }
 
@@ -169,6 +177,40 @@ namespace SkillForge.Api.Data
             modelBuilder.Entity<Review>()
                 .HasIndex(r => r.ReviewedUserId)
                 .HasDatabaseName("IX_Review_ReviewedUserId");
+        }
+
+        private void ConfigureExchangeStatusHistoryEntity(ModelBuilder modelBuilder)
+        {
+            // Configure ExchangeStatusHistory relationships
+            modelBuilder.Entity<ExchangeStatusHistory>()
+                .HasOne(esh => esh.Exchange)
+                .WithMany()
+                .HasForeignKey(esh => esh.ExchangeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ExchangeStatusHistory>()
+                .HasOne(esh => esh.ChangedByUser)
+                .WithMany()
+                .HasForeignKey(esh => esh.ChangedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Add indexes for performance
+            modelBuilder.Entity<ExchangeStatusHistory>()
+                .HasIndex(esh => new { esh.ExchangeId, esh.ChangedAt })
+                .HasDatabaseName("IX_ExchangeStatusHistory_ExchangeId_ChangedAt");
+
+            modelBuilder.Entity<ExchangeStatusHistory>()
+                .HasIndex(esh => esh.ChangedBy)
+                .HasDatabaseName("IX_ExchangeStatusHistory_ChangedBy");
+
+            // Configure enum conversion
+            modelBuilder.Entity<ExchangeStatusHistory>()
+                .Property(esh => esh.FromStatus)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<ExchangeStatusHistory>()
+                .Property(esh => esh.ToStatus)
+                .HasConversion<string>();
         }
     }
 }
