@@ -9,6 +9,89 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace SkillForge.Tests.Services;
 
+public class AuthTestBuilder
+{
+    private string _email = "test@example.com";
+    private string _password = "password123";
+    private string _name = "Test User";
+    private string? _bio = null;
+    private int _timeCredits = 5;
+    private DateTime? _createdAt = null;
+
+    public AuthTestBuilder WithEmail(string email)
+    {
+        _email = email;
+        return this;
+    }
+
+    public AuthTestBuilder WithPassword(string password)
+    {
+        _password = password;
+        return this;
+    }
+
+    public AuthTestBuilder WithName(string name)
+    {
+        _name = name;
+        return this;
+    }
+
+    public AuthTestBuilder WithBio(string bio)
+    {
+        _bio = bio;
+        return this;
+    }
+
+    public AuthTestBuilder WithTimeCredits(int credits)
+    {
+        _timeCredits = credits;
+        return this;
+    }
+
+    public AuthTestBuilder CreatedAt(DateTime createdAt)
+    {
+        _createdAt = createdAt;
+        return this;
+    }
+
+    public async Task<User> BuildInDatabase(ApplicationDbContext context)
+    {
+        var user = new User
+        {
+            Email = _email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(_password),
+            Name = _name,
+            Bio = _bio,
+            TimeCredits = _timeCredits,
+            CreatedAt = _createdAt ?? DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
+        return user;
+    }
+
+    public User BuildInMemory()
+    {
+        return new User
+        {
+            Id = 1,
+            Email = _email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(_password),
+            Name = _name,
+            Bio = _bio,
+            TimeCredits = _timeCredits,
+            CreatedAt = _createdAt ?? DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+
+    public string GetPlainTextPassword() => _password;
+    public string GetEmail() => _email;
+    public string GetName() => _name;
+}
+
 public class AuthServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
@@ -94,20 +177,17 @@ public class AuthServiceTests : IDisposable
     public async Task LoginAsync_ValidCredentials_ReturnsAuthResponse()
     {
         // Arrange
-        var registerDto = new RegisterDto
-        {
-            Email = "login@example.com",
-            Password = "password123",
-            Name = "Login User"
-        };
+        var builder = new AuthTestBuilder()
+            .WithEmail("login@example.com")
+            .WithPassword("password123")
+            .WithName("Login User");
 
-        // Register user first
-        await _authService.RegisterAsync(registerDto);
+        await builder.BuildInDatabase(_context);
 
         var loginDto = new LoginDto
         {
-            Email = registerDto.Email,
-            Password = registerDto.Password
+            Email = builder.GetEmail(),
+            Password = builder.GetPlainTextPassword()
         };
 
         // Act
@@ -115,8 +195,8 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(loginDto.Email, result.Email);
-        Assert.Equal(registerDto.Name, result.Name);
+        Assert.Equal(builder.GetEmail(), result.Email);
+        Assert.Equal(builder.GetName(), result.Name);
         Assert.Equal(5, result.TimeCredits);
         Assert.NotNull(result.Token);
         Assert.NotEmpty(result.Token);
@@ -143,19 +223,16 @@ public class AuthServiceTests : IDisposable
     public async Task LoginAsync_WrongPassword_ReturnsNull()
     {
         // Arrange
-        var registerDto = new RegisterDto
-        {
-            Email = "user@example.com",
-            Password = "correctpassword",
-            Name = "Test User"
-        };
+        var builder = new AuthTestBuilder()
+            .WithEmail("user@example.com")
+            .WithPassword("correctpassword")
+            .WithName("Test User");
 
-        // Register user first
-        await _authService.RegisterAsync(registerDto);
+        await builder.BuildInDatabase(_context);
 
         var loginDto = new LoginDto
         {
-            Email = registerDto.Email,
+            Email = builder.GetEmail(),
             Password = "wrongpassword"
         };
 
@@ -213,15 +290,13 @@ public class AuthServiceTests : IDisposable
     public async Task UpdateProfileAsync_ValidUser_UpdatesAndReturnsUser()
     {
         // Arrange
-        var registerDto = new RegisterDto
-        {
-            Email = "update@example.com",
-            Password = "password123",
-            Name = "Original Name",
-            Bio = "Original bio"
-        };
+        var builder = new AuthTestBuilder()
+            .WithEmail("update@example.com")
+            .WithPassword("password123")
+            .WithName("Original Name")
+            .WithBio("Original bio");
 
-        var authResponse = await _authService.RegisterAsync(registerDto);
+        var user = await builder.BuildInDatabase(_context);
         
         var updateDto = new UpdateProfileDto
         {
@@ -230,16 +305,16 @@ public class AuthServiceTests : IDisposable
         };
 
         // Act
-        var result = await _authService.UpdateProfileAsync(authResponse!.Id, updateDto);
+        var result = await _authService.UpdateProfileAsync(user.Id, updateDto);
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal(updateDto.Name, result.Name);
         Assert.Equal(updateDto.Bio, result.Bio);
-        Assert.Equal(registerDto.Email, result.Email); // Email should remain unchanged
+        Assert.Equal(builder.GetEmail(), result.Email); // Email should remain unchanged
         
         // Verify changes were persisted
-        var userFromDb = await _context.Users.FindAsync(authResponse.Id);
+        var userFromDb = await _context.Users.FindAsync(user.Id);
         Assert.NotNull(userFromDb);
         Assert.Equal(updateDto.Name, userFromDb.Name);
         Assert.Equal(updateDto.Bio, userFromDb.Bio);
@@ -266,22 +341,20 @@ public class AuthServiceTests : IDisposable
     public async Task GetUserByIdAsync_ExistingUser_ReturnsUser()
     {
         // Arrange
-        var registerDto = new RegisterDto
-        {
-            Email = "getuser@example.com",
-            Password = "password123",
-            Name = "Get User"
-        };
+        var builder = new AuthTestBuilder()
+            .WithEmail("getuser@example.com")
+            .WithPassword("password123")
+            .WithName("Get User");
 
-        var authResponse = await _authService.RegisterAsync(registerDto);
+        var user = await builder.BuildInDatabase(_context);
 
         // Act
-        var result = await _authService.GetUserByIdAsync(authResponse!.Id);
+        var result = await _authService.GetUserByIdAsync(user.Id);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(registerDto.Email, result.Email);
-        Assert.Equal(registerDto.Name, result.Name);
+        Assert.Equal(builder.GetEmail(), result.Email);
+        Assert.Equal(builder.GetName(), result.Name);
     }
 
     [Fact]
