@@ -1,32 +1,16 @@
+using Microsoft.AspNetCore.Http;
+using SkillForge.Api.DTOs.Auth;
+using SkillForge.Api.Models;
+
 namespace SkillForge.Api.Services
 {
-    public interface IUserService
+    public interface IAuthService
     {
-        // Interface will be implemented later
-    }
-    
-    public class UserService : IUserService
-    {
-        // Implementation will be added later
-    }
-    
-    public interface ISkillService
-    {
-        // Interface will be implemented later
-    }
-    
-    public class SkillService : ISkillService
-    {
-        // Implementation will be added later
-    }
-    
-    public interface IMatchingService
-    {
-        // Interface will be implemented later
-    }
-    
-    public class MatchingService : IMatchingService
-    {
-        // Implementation will be added later
+        Task<AuthResponseDto?> RegisterAsync(RegisterDto registerDto);
+        Task<AuthResponseDto?> LoginAsync(LoginDto loginDto);
+        string GenerateJwtToken(User user);
+        Task<User?> GetUserByIdAsync(int id);
+        Task<User?> UpdateProfileAsync(int userId, UpdateProfileDto updateProfileDto);
+        Task<string?> SaveProfileImageAsync(IFormFile image, int userId);
     }
 }
