@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SkillForge.Api.Data;
 using SkillForge.Api.Models;
+using SkillForge.Api.Services;
 
 namespace SkillForge.Api.Controllers
 {
@@ -9,64 +8,55 @@ namespace SkillForge.Api.Controllers
     [Route("api/[controller]")]
     public class SkillsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ISkillService _skillService;
 
-        public SkillsController(ApplicationDbContext context)
+        public SkillsController(ISkillService skillService)
         {
-            _context = context;
+            _skillService = skillService;
         }
 
         // GET: api/skills
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Skill>>> GetSkills()
         {
-            return await _context.Skills
-                .OrderBy(s => s.Name)
-                .ToListAsync();
+            var skills = await _skillService.GetAllSkillsAsync();
+            return Ok(skills);
         }
 
         // GET: api/skills/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Skill>> GetSkill(int id)
         {
-            var skill = await _context.Skills.FindAsync(id);
+            var skill = await _skillService.GetSkillByIdAsync(id);
 
             if (skill == null)
             {
                 return NotFound();
             }
 
-            return skill;
+            return Ok(skill);
         }
 
         // GET: api/skills/categories
         [HttpGet("categories")]
         public async Task<ActionResult<IEnumerable<string>>> GetCategories()
         {
-            var categories = await _context.Skills
-                .Select(s => s.Category)
-                .Distinct()
-                .OrderBy(c => c)
-                .ToListAsync();
-
-            return categories;
+            var categories = await _skillService.GetCategoriesAsync();
+            return Ok(categories);
         }
 
         // GET: api/skills/category/{category}
         [HttpGet("category/{category}")]
         public async Task<ActionResult<IEnumerable<Skill>>> GetSkillsByCategory(string category)
         {
-            var skills = await _context.Skills
-                .Where(s => s.Category.ToLower() == category.ToLower())
-                .OrderBy(s => s.Name)
-                .ToListAsync();
+            var skills = await _skillService.GetSkillsByCategoryAsync(category);
 
             if (!skills.Any())
             {
                 return NotFound($"No skills found in category '{category}'");
             }
 
-            return skills;
+            return Ok(skills);
         }
 
     }
