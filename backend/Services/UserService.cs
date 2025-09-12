@@ -62,12 +62,20 @@ namespace SkillForge.Api.Services
 
         public async Task<bool> DeleteUserAsync(int userId)
         {
-            var user = await _context.Users.FindAsync(userId);
+            var user = await _context.Users
+                .Include(u => u.ReviewsReceived)
+                .Include(u => u.ReviewsGiven)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+                
             if (user == null)
             {
                 return false;
             }
 
+            // Remove related reviews first due to foreign key constraints
+            _context.Reviews.RemoveRange(user.ReviewsReceived);
+            _context.Reviews.RemoveRange(user.ReviewsGiven);
+            
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
             return true;
