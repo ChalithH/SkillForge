@@ -23,9 +23,9 @@ const toastStyles = {
     iconBg: 'bg-red-100 text-red-500',
   },
   warning: {
-    container: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+    container: 'bg-amber-50 border-amber-200 text-amber-800',
     icon: '⚠',
-    iconBg: 'bg-yellow-100 text-yellow-500',
+    iconBg: 'bg-amber-100 text-amber-500',
   },
   info: {
     container: 'bg-blue-50 border-blue-200 text-blue-800',

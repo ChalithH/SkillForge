@@ -112,14 +112,14 @@ export default function Navigation() {
             {/* Credit Balance with Animation */}
             <div className="flex items-center space-x-1">
               <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-all duration-500 ${
-                creditChange === 'increase' ? 'bg-green-200 text-green-900 scale-110' :
+                creditChange === 'increase' ? 'bg-amber-200 text-amber-900 scale-110' :
                 creditChange === 'decrease' ? 'bg-red-200 text-red-900 scale-110' :
-                'bg-green-100 text-green-800'
+                'bg-amber-100 text-amber-800'
               }`}>
                 <Coins className="w-3 h-3 mr-1" />
                 {user?.timeCredits || 0} credits
                 {creditChange === 'increase' && (
-                  <TrendingUp className="w-3 h-3 ml-1 text-green-600" />
+                  <TrendingUp className="w-3 h-3 ml-1 text-amber-600" />
                 )}
                 {creditChange === 'decrease' && (
                   <TrendingDown className="w-3 h-3 ml-1 text-red-600" />

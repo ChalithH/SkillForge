@@ -102,7 +102,7 @@ export default function AddSkillModal({ isOpen, onClose, onAdd, isLoading = fals
               onMouseEnter={() => setHoveredStar(star)}
               onMouseLeave={() => setHoveredStar(null)}
               className={`w-6 h-6 transition-colors duration-150 ${
-                shouldHighlight ? 'text-yellow-400' : 'text-gray-300'
+                shouldHighlight ? 'text-amber-400' : 'text-gray-300'
               } hover:scale-110`}
             >
               <svg fill="currentColor" viewBox="0 0 20 20">

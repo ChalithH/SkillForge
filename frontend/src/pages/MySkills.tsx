@@ -161,7 +161,7 @@ export default function MySkills() {
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
                         <Coins className="w-4 h-4 text-white" />
                       </div>
                     </div>

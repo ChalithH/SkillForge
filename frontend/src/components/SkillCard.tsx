@@ -16,7 +16,7 @@ const StarRating = ({ rating, maxRating = 5 }: { rating: number; maxRating?: num
         <svg
           key={index}
           className={`w-4 h-4 ${
-            index < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+            index < rating ? 'text-amber-400 fill-current' : 'text-gray-300'
           }`}
           viewBox="0 0 20 20"
         >

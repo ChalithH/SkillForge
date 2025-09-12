@@ -58,7 +58,7 @@ export default function Dashboard() {
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-sm font-medium">{offeredSkillsCount}</span>
                       </div>
                     </div>
@@ -80,7 +80,7 @@ export default function Dashboard() {
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-sm font-medium">0</span>
                       </div>
                     </div>
@@ -102,7 +102,7 @@ export default function Dashboard() {
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-sm font-medium">0</span>
                       </div>
                     </div>

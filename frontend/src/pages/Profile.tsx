@@ -310,7 +310,7 @@ export default function Profile() {
                     <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
                     <p className="text-sm text-gray-500">{user.email}</p>
                     <div className="mt-2">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                         {user.timeCredits} time credits
                       </span>
                     </div>
