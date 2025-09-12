@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { logout, loadUser } from '../store/slices/authSlice';
+import { logout } from '../store/slices/authSlice';
 import { useState, useEffect } from 'react';
-import { Bell, Menu, Coins, RefreshCw, TrendingUp, TrendingDown } from 'lucide-react';
+import { Bell, Menu, Coins, TrendingUp, TrendingDown } from 'lucide-react';
 import { NotificationBadge } from './NotificationBadge';
 import { usePendingRequests } from '../hooks/usePendingRequests';
 
@@ -32,13 +32,6 @@ export default function Navigation() {
     navigate('/login');
   };
 
-  const handleRefreshCredits = async () => {
-    try {
-      await dispatch(loadUser()).unwrap();
-    } catch (error) {
-      console.error('Failed to refresh user data:', error);
-    }
-  };
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', current: location.pathname === '/dashboard' },
@@ -121,15 +114,6 @@ export default function Navigation() {
                   <TrendingDown className="w-3 h-3 ml-1 text-red-600" />
                 )}
               </div>
-              
-              {/* Refresh Button */}
-              <button
-                onClick={handleRefreshCredits}
-                className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                title="Refresh credit balance"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </button>
             </div>
             
             <button
