@@ -5,6 +5,7 @@ import ModalLayout from './shared/ModalLayout';
 import SkillSearchInput from './shared/SkillSearchInput';
 import SkillSelectionCard from './shared/SkillSelectionCard';
 import StarRating from './shared/StarRating';
+import { GraduationCap } from 'lucide-react';
 
 interface AddSkillToTeachModalProps {
   isOpen: boolean;
@@ -133,7 +134,7 @@ export default function AddSkillToTeachModal({
         <div className="p-3 bg-green-50 rounded-md border border-green-200">
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <span className="text-green-600 text-lg">🎯</span>
+              <GraduationCap className="w-5 h-5 text-green-600" />
             </div>
             <div className="ml-2">
               <h4 className="text-sm font-medium text-green-800">Teaching Benefits</h4>

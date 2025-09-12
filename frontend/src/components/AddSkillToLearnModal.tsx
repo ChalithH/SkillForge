@@ -5,6 +5,7 @@ import ModalLayout from './shared/ModalLayout';
 import SkillSearchInput from './shared/SkillSearchInput';
 import SkillSelectionCard from './shared/SkillSelectionCard';
 import StarRating from './shared/StarRating';
+import { BookOpen } from 'lucide-react';
 
 interface AddSkillToLearnModalProps {
   isOpen: boolean;
@@ -133,7 +134,7 @@ export default function AddSkillToLearnModal({
         <div className="p-3 bg-blue-50 rounded-md border border-blue-200">
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <span className="text-blue-600 text-lg">📚</span>
+              <BookOpen className="w-5 h-5 text-blue-600" />
             </div>
             <div className="ml-2">
               <h4 className="text-sm font-medium text-blue-800">Learning Benefits</h4>

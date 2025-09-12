@@ -1,4 +1,5 @@
 import { Skill, UserSkill } from '../types';
+import { GraduationCap, BookOpen } from 'lucide-react';
 
 interface SkillCardProps {
   skill: Skill;
@@ -83,10 +84,14 @@ export default function SkillCard({
                   inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
                   ${isOffering 
                     ? 'bg-green-100 text-green-800' 
-                    : 'bg-orange-100 text-orange-800'
+                    : 'bg-blue-100 text-blue-800'
                   }
                 `}>
-                  {isOffering ? '🎯 Offering' : '📚 Learning'}
+                  {isOffering ? (
+                    <><GraduationCap className="w-3 h-3 mr-1" /> I can teach</>
+                  ) : (
+                    <><BookOpen className="w-3 h-3 mr-1" /> I want to learn</>
+                  )}
                 </span>
               </div>
             </div>

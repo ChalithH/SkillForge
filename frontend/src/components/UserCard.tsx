@@ -114,12 +114,12 @@ export const UserCard: React.FC<UserCardProps> = ({
             {user.skillsOffered.slice(0, 4).map((skill) => (
               <div
                 key={skill.id}
-                className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                className="inline-flex items-center px-3 py-1 bg-green-50 text-green-800 text-xs font-medium rounded-full border border-green-200"
               >
                 <span>{skill.skillName}</span>
                 <div className="ml-2 flex">
                   {Array.from({ length: skill.proficiencyLevel }).map((_, i) => (
-                    <Star key={i} className="w-3 h-3 fill-blue-600 text-blue-600" />
+                    <Star key={i} className="w-3 h-3 fill-green-600 text-green-600" />
                   ))}
                 </div>
               </div>

@@ -12,6 +12,7 @@ import AddSkillToTeachModal from '../components/AddSkillToTeachModal';
 import AddSkillToLearnModal from '../components/AddSkillToLearnModal';
 import { useToast } from '../contexts/ToastContext';
 import { UserSkill, CreateUserSkillRequest } from '../types';
+import { GraduationCap, BookOpen, Coins } from 'lucide-react';
 
 export default function MySkills() {
   const { user } = useAppSelector((state) => state.auth);
@@ -117,7 +118,7 @@ export default function MySkills() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-bold">🎯</span>
+                        <GraduationCap className="w-4 h-4 text-white" />
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -139,7 +140,7 @@ export default function MySkills() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-bold">📚</span>
+                        <BookOpen className="w-4 h-4 text-white" />
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -161,7 +162,7 @@ export default function MySkills() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-bold">⭐</span>
+                        <Coins className="w-4 h-4 text-white" />
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -191,7 +192,8 @@ export default function MySkills() {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                🎯 Skills I Offer ({offeredSkills.length})
+                <GraduationCap className="w-4 h-4 inline mr-1" />
+                Skills I Can Teach ({offeredSkills.length})
               </button>
               <button
                 onClick={() => setActiveTab('learning')}
@@ -201,7 +203,8 @@ export default function MySkills() {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                📚 Skills I Want to Learn ({learningSkills.length})
+                <BookOpen className="w-4 h-4 inline mr-1" />
+                Skills I Want to Learn ({learningSkills.length})
               </button>
             </nav>
           </div>

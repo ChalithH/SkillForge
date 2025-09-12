@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Skill, UserSkill } from '../types';
 import { useGetSkillsQuery } from '../store/api/apiSlice';
 import { searchSkills, highlightSearchTerm } from '../utils/searchUtils';
+import { GraduationCap, BookOpen } from 'lucide-react';
 
 interface AddSkillModalProps {
   isOpen: boolean;
@@ -143,10 +144,10 @@ export default function AddSkillModal({ isOpen, onClose, onAdd, isLoading = fals
           {/* Context hint */}
           {defaultIsOffering !== undefined && (
             <div className="mb-4 p-3 bg-blue-50 rounded-md">
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-blue-700 flex items-center">
                 {defaultIsOffering 
-                  ? '🎯 Adding a skill you can teach to others' 
-                  : '📚 Adding a skill you want to learn from others'}
+                  ? (<><GraduationCap className="w-4 h-4 mr-1" /> Adding a skill you can teach to others</>) 
+                  : (<><BookOpen className="w-4 h-4 mr-1" /> Adding a skill you want to learn from others</>)}
               </p>
             </div>
           )}
@@ -240,7 +241,7 @@ export default function AddSkillModal({ isOpen, onClose, onAdd, isLoading = fals
                     onChange={() => setIsOffering(true)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                   />
-                  <span className="ml-2 text-sm text-gray-700">🎯 Offer this skill (teach others)</span>
+                  <span className="ml-2 text-sm text-gray-700 flex items-center"><GraduationCap className="w-4 h-4 mr-1" /> I can teach this skill</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -250,7 +251,7 @@ export default function AddSkillModal({ isOpen, onClose, onAdd, isLoading = fals
                     onChange={() => setIsOffering(false)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                   />
-                  <span className="ml-2 text-sm text-gray-700">📚 Learn this skill (from others)</span>
+                  <span className="ml-2 text-sm text-gray-700 flex items-center"><BookOpen className="w-4 h-4 mr-1" /> I want to learn this skill</span>
                 </label>
               </div>
             </div>
