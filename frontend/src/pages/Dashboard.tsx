@@ -8,6 +8,8 @@ import AddSkillModal from '../components/AddSkillModal';
 import { ActivityFeed } from '../components/ActivityFeed';
 import { useToast } from '../contexts/ToastContext';
 import { UserSkill, CreateUserSkillRequest } from '../types';
+import { GraduationCap, Clock, Star, Plus, Users, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
   const { user } = useAppSelector((state) => state.auth);
@@ -45,13 +47,32 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="bg-white rounded-lg shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Dashboard</h2>
-            <p className="text-gray-600">
-              You have <span className="font-semibold">{user?.timeCredits || 0}</span> time credits available.
-            </p>
-            <p className="text-gray-600 mt-2">
-              Welcome to SkillForge, {user?.name}! Your skill exchange platform is ready.
-            </p>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
+              <div className="flex gap-3">
+                <Link
+                  to="/skills"
+                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Skills
+                </Link>
+                <Link
+                  to="/browse"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+                >
+                  <Users className="w-4 h-4 mr-1" />
+                  Find Partners
+                </Link>
+                <Link
+                  to="/exchanges"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 text-sm font-medium"
+                >
+                  <ArrowRight className="w-4 h-4 mr-1" />
+                  My Exchanges
+                </Link>
+              </div>
+            </div>
             
             <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               <div className="bg-white overflow-hidden shadow rounded-lg">
@@ -59,7 +80,7 @@ export default function Dashboard() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">{offeredSkillsCount}</span>
+                        <GraduationCap className="w-4 h-4 text-white" />
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -81,7 +102,7 @@ export default function Dashboard() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">0</span>
+                        <Clock className="w-4 h-4 text-white" />
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -103,7 +124,7 @@ export default function Dashboard() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">0</span>
+                        <Star className="w-4 h-4 text-white" />
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -121,68 +142,9 @@ export default function Dashboard() {
               </div>
             </div>
             
-            {/* Main Content Grid */}
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Skills Preview Section */}
-              <div className="lg:col-span-2">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Your Skills Preview</h3>
-                </div>
-              
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                  <span className="ml-2 text-gray-600">Loading skills...</span>
-                </div>
-              ) : previewSkills.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {previewSkills.map((userSkill) => (
-                    <SkillCard
-                      key={userSkill.id}
-                      skill={userSkill.skill!}
-                      userSkill={userSkill}
-                      showActions={false}
-                      onClick={() => window.location.href = '/skills'}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 mx-auto mb-4 text-gray-300">
-                    <svg fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">No skills added yet</h4>
-                  <p className="text-gray-500 mb-4">Start building your skill profile to connect with others</p>
-                  <button
-                    onClick={() => 
-                      // setIsAddSkillModalOpen(true)
-                      window.location.href = '/skills'
-                    }
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium"
-                  >
-                    Add Your First Skill
-                  </button>
-                </div>
-              )}
-              
-                {previewSkills.length > 0 && (
-                  <div className="mt-4 text-center">
-                    <a
-                      href="/skills"
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                    >
-                      View all skills ({totalValidSkillsCount}) →
-                    </a>
-                  </div>
-                )}
-              </div>
-
-              {/* Activity Feed Section */}
-              <div className="lg:col-span-1">
-                <ActivityFeed />
-              </div>
+            {/* Activity Feed */}
+            <div className="mt-8">
+              <ActivityFeed />
             </div>
           </div>
         </div>

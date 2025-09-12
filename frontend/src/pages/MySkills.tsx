@@ -47,8 +47,9 @@ export default function MySkills() {
       } else {
         closeLearnModal();
       }
-    } catch (error: any) {
-      showError('Failed to add skill', error?.data?.message || 'Please try again.');
+    } catch (error) {
+      const errorMessage = (error as any)?.data?.message || 'Please try again.';
+      showError('Failed to add skill', errorMessage);
     }
   };
 
@@ -57,8 +58,9 @@ export default function MySkills() {
     try {
       await deleteUserSkill(userSkillId).unwrap();
       showSuccess('Skill removed successfully!');
-    } catch (error: any) {
-      showError('Failed to remove skill', error?.data?.message || 'Please try again.');
+    } catch (error) {
+      const errorMessage = (error as any)?.data?.message || 'Please try again.';
+      showError('Failed to remove skill', errorMessage);
     }
   };
 

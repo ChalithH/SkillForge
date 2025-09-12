@@ -1,22 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { useUpdateProfileMutation, useUploadProfileImageMutation, useGetUserSkillsQuery } from '../store/api/apiSlice';
+import { useUpdateProfileMutation, useUploadProfileImageMutation } from '../store/api/apiSlice';
 import { updateUserProfile } from '../store/slices/authSlice';
-import { useSkillFilters } from '../hooks/useSkillFilters';
 import Navigation from '../components/Navigation';
 import { useToast } from '../contexts/ToastContext';
 
 export default function Profile() {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
-  const { data: userSkills = [] } = useGetUserSkillsQuery();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [uploadProfileImage, { isLoading: isUploading }] = useUploadProfileImageMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { showSuccess, showError } = useToast();
 
-  // Get user skills statistics
-  const { offeredSkillsCount } = useSkillFilters(userSkills);
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -309,11 +305,6 @@ export default function Profile() {
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
                     <p className="text-sm text-gray-500">{user.email}</p>
-                    <div className="mt-2">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                        {user.timeCredits} time credits
-                      </span>
-                    </div>
                   </div>
                 </div>
 
@@ -323,22 +314,6 @@ export default function Profile() {
                   <p className="text-gray-700 whitespace-pre-wrap">
                     {user.bio || 'No bio provided yet. Click "Edit Profile" to add your bio.'}
                   </p>
-                </div>
-
-                {/* Profile Stats */}
-                <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-200">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">{offeredSkillsCount}</div>
-                    <div className="text-sm text-gray-500">Skills Offered</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">0</div>
-                    <div className="text-sm text-gray-500">Exchanges Completed</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">0</div>
-                    <div className="text-sm text-gray-500">Reviews Received</div>
-                  </div>
                 </div>
               </div>
             )}

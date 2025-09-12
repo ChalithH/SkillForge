@@ -88,10 +88,6 @@ export default function Navigation() {
             </div>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <span className="hidden sm:block text-gray-700 text-sm">
-              Welcome, {user?.name}
-            </span>
-            
             {/* Notification Bell */}
             <div className="relative">
               <Link
