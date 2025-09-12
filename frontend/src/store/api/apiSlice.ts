@@ -229,6 +229,10 @@ export const apiSlice = createApi({
       query: () => '/auth/me',
       providesTags: ['User'],
     }),
+    getUserById: builder.query<UserMatchDto, number>({
+      query: (userId) => `/matching/user/${userId}`,
+      providesTags: (result, error, userId) => [{ type: 'User', id: userId }],
+    }),
     
     // Review endpoints
     createReview: builder.mutation({
@@ -287,6 +291,7 @@ export const {
   useCreateExchangeMutation,
   useUpdateExchangeStatusMutation,
   useGetCurrentUserQuery,
+  useGetUserByIdQuery,
   useCreateReviewMutation,
   useGetUserReviewsQuery,
   useBrowseUsersQuery,

@@ -19,20 +19,8 @@ export const ActivityFeed: React.FC = () => {
       id: `${notif.timestamp}-${index}`,
     }));
 
-    // Add online status activities for users coming online
-    const onlineActivities: ActivityItem[] = onlineUsers
-      .filter(userId => userId !== user?.id) // Don't show our own status
-      .slice(0, 5) // Show only recent 5
-      .map(userId => ({
-        id: `online-${userId}`,
-        type: 'user_online',
-        message: `User ${userId} is now online`,
-        timestamp: new Date().toISOString(),
-        senderId: userId,
-      }));
-
-    // Combine and sort by timestamp (newest first)
-    const allActivities = [...activityItems, ...onlineActivities]
+    // Sort by timestamp (newest first) and keep only recent items
+    const allActivities = activityItems
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 20); // Keep only 20 most recent
 
@@ -144,7 +132,7 @@ export const ActivityFeed: React.FC = () => {
           <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">No recent activity</p>
           <p className="text-sm text-gray-500 mt-1">
-            Activity will appear here when you start exchanging skills
+            Activity will appear here when you start learning and teaching
           </p>
         </div>
       </div>

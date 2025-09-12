@@ -7,7 +7,8 @@ interface ExchangeRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
   targetUser: User; // The user offering the skill
-  skill: Skill;
+  skill?: Skill; // Optional - for backward compatibility
+  skills?: Skill[]; // Multiple skills to choose from
   onSuccess?: () => void;
 }
 
@@ -16,13 +17,18 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
   onClose,
   targetUser,
   skill,
+  skills,
   onSuccess
 }) => {
   const currentUser = useAppSelector((state) => state.auth.user);
   const [createExchange, { isLoading }] = useCreateExchangeMutation();
 
+  // Use skills array if provided, otherwise fall back to single skill
+  const availableSkills = skills || (skill ? [skill] : []);
+  
   // Form state
   const [formData, setFormData] = useState({
+    selectedSkillId: availableSkills[0]?.id || 0,
     date: '',
     time: '',
     duration: 1,
@@ -40,6 +46,7 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
       tomorrow.setDate(tomorrow.getDate() + 1);
       
       setFormData({
+        selectedSkillId: availableSkills[0]?.id || 0,
         date: tomorrow.toISOString().split('T')[0],
         time: '10:00',
         duration: 1,
@@ -48,7 +55,7 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
       });
       setErrors({});
     }
-  }, [isOpen]);
+  }, [isOpen, availableSkills]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -103,7 +110,7 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
       const exchangeRequest: CreateExchangeRequest = {
         offererId: targetUser.id,
         learnerId: currentUser.id,
-        skillId: skill.id,
+        skillId: formData.selectedSkillId,
         scheduledAt,
         duration: formData.duration,
         meetingLink: formData.meetingLink || undefined,
@@ -148,7 +155,7 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
       <div className="relative top-20 mx-auto p-5 border w-full max-w-lg bg-white rounded-md shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900">
-            Request Skill Exchange
+            Request Skill Session
           </h3>
           <button
             onClick={onClose}
@@ -160,17 +167,49 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
           </button>
         </div>
 
-        {/* Exchange Summary */}
+        {/* Session Summary */}
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-          <h4 className="font-medium text-blue-900 mb-2">Exchange Details</h4>
+          <h4 className="font-medium text-blue-900 mb-2">Session Details</h4>
           <div className="text-sm text-blue-800">
-            <p><strong>Skill:</strong> {skill.name}</p>
             <p><strong>Teacher:</strong> {targetUser.name}</p>
             <p><strong>Student:</strong> {currentUser?.name} (You)</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Skill Selection (if multiple skills available) */}
+          {availableSkills.length > 1 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Select Skill to Learn *
+              </label>
+              <select
+                value={formData.selectedSkillId}
+                onChange={(e) => handleInputChange('selectedSkillId', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {availableSkills.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} - {s.category}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          
+          {/* Single skill display (if only one skill) */}
+          {availableSkills.length === 1 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Skill to Learn
+              </label>
+              <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
+                <span className="text-sm text-gray-900">{availableSkills[0]?.name}</span>
+                <span className="text-sm text-gray-500 ml-2">({availableSkills[0]?.category})</span>
+              </div>
+            </div>
+          )}
+
           {/* Date Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

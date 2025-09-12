@@ -6,6 +6,7 @@ import Profile from './pages/Profile';
 import MySkills from './pages/MySkills';
 import MyExchanges from './pages/MyExchanges';
 import Browse from './pages/Browse';
+import ViewProfile from './pages/ViewProfile';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AppInitializer } from './components/AppInitializer';
 import { ToastProvider } from './contexts/ToastContext';
@@ -24,6 +25,7 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/:userId" element={<ViewProfile />} />
                 <Route path="/skills" element={<MySkills />} />
                 <Route path="/exchanges" element={<MyExchanges />} />
                 <Route path="/browse" element={<Browse />} />

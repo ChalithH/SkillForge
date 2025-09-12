@@ -2,8 +2,7 @@ import { useGetUserSkillsQuery } from '../store/api/apiSlice';
 import { useSkillFilters } from '../hooks/useSkillFilters';
 import Navigation from '../components/Navigation';
 import { ActivityFeed } from '../components/ActivityFeed';
-import { GraduationCap, Clock, Star, Plus, Users, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { GraduationCap, Clock, Star } from 'lucide-react';
 
 export default function Dashboard() {
   const { data: userSkills = [] } = useGetUserSkillsQuery();
@@ -19,32 +18,7 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="bg-white rounded-lg shadow-sm p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-              <div className="flex gap-3">
-                <Link
-                  to="/skills"
-                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Skills
-                </Link>
-                <Link
-                  to="/browse"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
-                >
-                  <Users className="w-4 h-4 mr-1" />
-                  Find Partners
-                </Link>
-                <Link
-                  to="/exchanges"
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 text-sm font-medium"
-                >
-                  <ArrowRight className="w-4 h-4 mr-1" />
-                  My Exchanges
-                </Link>
-              </div>
-            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h2>
             
             <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               <div className="bg-white overflow-hidden shadow rounded-lg">
@@ -58,7 +32,7 @@ export default function Dashboard() {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          Skills Offered
+                          Skills Offering
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
                           {offeredSkillsCount}
@@ -80,7 +54,7 @@ export default function Dashboard() {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          Exchanges Completed
+                          Sessions Completed
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
                           0

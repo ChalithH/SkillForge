@@ -37,7 +37,7 @@ export default function Navigation() {
     { name: 'Dashboard', href: '/dashboard', current: location.pathname === '/dashboard' },
     { name: 'Browse', href: '/browse', current: location.pathname === '/browse' },
     { name: 'My Skills', href: '/skills', current: location.pathname === '/skills' },
-    { name: 'My Exchanges', href: '/exchanges', current: location.pathname === '/exchanges' },
+    { name: 'My Sessions', href: '/exchanges', current: location.pathname === '/exchanges' },
     { name: 'Profile', href: '/profile', current: location.pathname === '/profile' },
   ];
 
@@ -63,7 +63,7 @@ export default function Navigation() {
                   } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors relative`}
                 >
                   {item.name}
-                  {item.name === 'My Exchanges' && incomingCount > 0 && (
+                  {item.name === 'My Sessions' && incomingCount > 0 && (
                     <NotificationBadge 
                       count={incomingCount} 
                       className="ml-2 -mt-1"

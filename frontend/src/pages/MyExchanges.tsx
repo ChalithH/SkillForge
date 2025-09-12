@@ -99,15 +99,15 @@ export default function MyExchanges() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Exchanges</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Sessions</h1>
           <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
-            Manage your skill exchange sessions and track their progress
+            Manage your learning and teaching sessions
           </p>
         </div>
 
         {/* Tabs - Mobile Responsive with Horizontal Scroll */}
         <div className="border-b border-gray-200 mb-6 sm:mb-8">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden">
             <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max px-1" aria-label="Tabs">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.key;
@@ -148,12 +148,12 @@ export default function MyExchanges() {
             <div className="text-center py-8 sm:py-12 px-4">
               <ArrowLeftRight className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
               <h3 className="mt-2 text-sm sm:text-base font-medium text-gray-900">
-                {activeTab === 'all' ? 'No exchanges yet' : `No ${tabs.find(t => t.key === activeTab)?.label.toLowerCase()} exchanges`}
+                {activeTab === 'all' ? 'No sessions yet' : `No ${tabs.find(t => t.key === activeTab)?.label.toLowerCase()} sessions`}
               </h3>
               <p className="mt-1 text-xs sm:text-sm text-gray-500 max-w-sm mx-auto">
                 {activeTab === 'all' 
-                  ? 'Start by browsing available skills and requesting an exchange.'
-                  : `You don't have any ${tabs.find(t => t.key === activeTab)?.label.toLowerCase()} exchanges.`
+                  ? 'Start by browsing available skills and requesting a session.'
+                  : `You don't have any ${tabs.find(t => t.key === activeTab)?.label.toLowerCase()} sessions.`
                 }
               </p>
               {activeTab === 'all' && (
@@ -186,7 +186,7 @@ export default function MyExchanges() {
         {/* Quick Stats */}
         {allExchanges.length > 0 && activeTab === 'all' && (
           <div className="mt-8 sm:mt-12 bg-white rounded-lg shadow p-4 sm:p-6">
-            <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Exchange Summary</h2>
+            <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Session Overview</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
               {tabs.slice(1).map((tab) => {
                 return (

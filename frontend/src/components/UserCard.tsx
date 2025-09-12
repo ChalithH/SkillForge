@@ -1,5 +1,6 @@
 import React from 'react';
 import { Star, Clock, Users, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { UserMatchDto } from '../types';
 import { useNotifications } from '../contexts/NotificationContext';
 
@@ -16,6 +17,7 @@ export const UserCard: React.FC<UserCardProps> = ({
   onRequestExchange,
   showCompatibilityScore = true,
 }) => {
+  const navigate = useNavigate();
   const { isUserOnline } = useNotifications();
   const renderStars = (rating: number) => {
     const stars = [];
@@ -138,7 +140,7 @@ export const UserCard: React.FC<UserCardProps> = ({
       {/* Action Buttons */}
       <div className="flex space-x-3 pt-4 border-t border-gray-100">
         <button
-          onClick={() => onViewProfile?.(user)}
+          onClick={() => navigate(`/profile/${user.id}`, { state: { user } })}
           className="flex-1 flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
         >
           View Profile
@@ -146,10 +148,16 @@ export const UserCard: React.FC<UserCardProps> = ({
         </button>
         <button
           onClick={() => onRequestExchange?.(user)}
-          className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors duration-200"
+          disabled={user.skillsOffered.length === 0}
+          className={`flex-1 flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+            user.skillsOffered.length === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+          title={user.skillsOffered.length === 0 ? 'This user has no skills to teach' : 'Request a learning session'}
         >
           <Clock className="w-4 h-4 mr-1" />
-          Request Exchange
+          Request Session
         </button>
       </div>
     </div>

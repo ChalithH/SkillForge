@@ -62,8 +62,8 @@ export default function Browse() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Discover Skill Partners</h1>
-          <p className="text-gray-600">Find users to exchange skills with based on your interests and compatibility.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Teachers</h1>
+          <p className="text-gray-600">Find teachers for skills you want to learn based on your interests.</p>
         </div>
 
         {/* Tabs */}
@@ -78,7 +78,7 @@ export default function Browse() {
               }`}
             >
               <Search className="w-4 h-4 inline mr-2" />
-              Browse All Users
+              Browse Teachers
             </button>
             <button
               onClick={() => setActiveTab('recommendations')}
@@ -361,12 +361,12 @@ export default function Browse() {
             bio: selectedUser.bio,
             profileImageUrl: selectedUser.profileImageUrl,
           }}
-          skill={{
-            id: selectedUser.skillsOffered[0]?.skillId || 0,
-            name: selectedUser.skillsOffered[0]?.skillName || '',
-            category: selectedUser.skillsOffered[0]?.skillCategory || '',
-            description: selectedUser.skillsOffered[0]?.description || '',
-          }}
+          skills={selectedUser.skillsOffered.map(s => ({
+            id: s.skillId,
+            name: s.skillName,
+            category: s.skillCategory || s.category,
+            description: s.description || '',
+          }))}
           onSuccess={() => {
             setIsExchangeModalOpen(false);
             setSelectedUser(null);

@@ -47,7 +47,7 @@ export const ExchangeTimelineModal: React.FC<ExchangeTimelineModalProps> = ({
           </button>
         </div>
 
-        {/* Exchange Summary */}
+        {/* Session Summary */}
         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
             <div>
