@@ -672,6 +672,136 @@ public class CreditServiceTests : IDisposable
         Assert.Equal(0, updatedUser!.TimeCredits); // Should be exactly 0
     }
 
+    [Fact]
+    public async Task ConcurrentTransfers_HandledCorrectly()
+    {
+        // Arrange
+        var fromBuilder = new CreditTestBuilder()
+            .WithName("Alice")
+            .WithEmail("alice@test.com")
+            .WithTimeCredits(20);
+        var toBuilder1 = new CreditTestBuilder()
+            .WithName("Bob")
+            .WithEmail("bob@test.com")
+            .WithTimeCredits(0);
+        var toBuilder2 = new CreditTestBuilder()
+            .WithName("Charlie")
+            .WithEmail("charlie@test.com")
+            .WithTimeCredits(0);
+
+        var fromUser = await fromBuilder.BuildInDatabase(_context);
+        var toUser1 = await toBuilder1.BuildInDatabase(_context);
+        var toUser2 = await toBuilder2.BuildInDatabase(_context);
+
+        // Act - Simulate concurrent transfers
+        var task1 = _creditService.TransferCreditsAsync(fromUser.Id, toUser1.Id, 8, "Transfer 1");
+        var task2 = _creditService.TransferCreditsAsync(fromUser.Id, toUser2.Id, 7, "Transfer 2");
+
+        var results = await Task.WhenAll(task1, task2);
+
+        // Assert
+        Assert.All(results, r => Assert.True(r));
+
+        var updatedFromUser = await _context.Users.FindAsync(fromUser.Id);
+        var updatedToUser1 = await _context.Users.FindAsync(toUser1.Id);
+        var updatedToUser2 = await _context.Users.FindAsync(toUser2.Id);
+
+        Assert.Equal(5, updatedFromUser!.TimeCredits); // 20 - 8 - 7 = 5
+        Assert.Equal(8, updatedToUser1!.TimeCredits);
+        Assert.Equal(7, updatedToUser2!.TimeCredits);
+    }
+
+    [Fact]
+    public async Task GetUserCreditsAsync_AfterMultipleTransactions_ReturnsCorrectBalance()
+    {
+        // Arrange
+        var user1Builder = new CreditTestBuilder()
+            .WithName("Alice")
+            .WithEmail("alice@test.com")
+            .WithTimeCredits(10);
+        var user2Builder = new CreditTestBuilder()
+            .WithName("Bob")
+            .WithEmail("bob@test.com")
+            .WithTimeCredits(10);
+
+        var user1 = await user1Builder.BuildInDatabase(_context);
+        var user2 = await user2Builder.BuildInDatabase(_context);
+
+        // Act - Multiple transactions
+        await _creditService.AddCreditsAsync(user1.Id, 5, "Add");
+        await _creditService.DeductCreditsAsync(user1.Id, 3, "Deduct");
+        await _creditService.TransferCreditsAsync(user1.Id, user2.Id, 2, "Transfer");
+        await _creditService.AddCreditsAsync(user1.Id, 1, "Add more");
+
+        // Assert
+        var finalBalance = await _creditService.GetUserCreditsAsync(user1.Id);
+        Assert.Equal(11, finalBalance); // 10 + 5 - 3 - 2 + 1 = 11
+    }
+
+    [Fact]
+    public async Task TransferCreditsAsync_LargeAmount_HandlesCorrectly()
+    {
+        // Arrange
+        var fromBuilder = new CreditTestBuilder()
+            .WithName("Rich User")
+            .WithEmail("rich@test.com")
+            .WithTimeCredits(int.MaxValue - 1);
+        var toBuilder = new CreditTestBuilder()
+            .WithName("Poor User")
+            .WithEmail("poor@test.com")
+            .WithTimeCredits(0);
+
+        var fromUser = await fromBuilder.BuildInDatabase(_context);
+        var toUser = await toBuilder.BuildInDatabase(_context);
+
+        // Act
+        var largeAmount = 1000000;
+        var result = await _creditService.TransferCreditsAsync(fromUser.Id, toUser.Id, largeAmount, "Large transfer");
+
+        // Assert
+        Assert.True(result);
+
+        var updatedFromUser = await _context.Users.FindAsync(fromUser.Id);
+        var updatedToUser = await _context.Users.FindAsync(toUser.Id);
+
+        Assert.Equal(int.MaxValue - 1 - largeAmount, updatedFromUser!.TimeCredits);
+        Assert.Equal(largeAmount, updatedToUser!.TimeCredits);
+    }
+
+    [Fact]
+    public async Task GetUserCreditHistoryAsync_WithExchangeId_ShowsRelatedTransactions()
+    {
+        // Arrange
+        var user1Builder = new CreditTestBuilder()
+            .WithName("Alice")
+            .WithEmail("alice@test.com")
+            .WithTimeCredits(10);
+        var user2Builder = new CreditTestBuilder()
+            .WithName("Bob")
+            .WithEmail("bob@test.com")
+            .WithTimeCredits(10);
+
+        var user1 = await user1Builder.BuildInDatabase(_context);
+        var user2 = await user2Builder.BuildInDatabase(_context);
+
+        const int exchangeId = 123;
+
+        // Act
+        await _creditService.TransferCreditsAsync(user1.Id, user2.Id, 3, "Exchange 123", exchangeId);
+
+        // Assert
+        var user1History = await _creditService.GetUserCreditHistoryAsync(user1.Id);
+        var user2History = await _creditService.GetUserCreditHistoryAsync(user2.Id);
+
+        var user1Transaction = user1History.First();
+        var user2Transaction = user2History.First();
+
+        Assert.Equal(exchangeId, user1Transaction.ExchangeId);
+        Assert.Equal(exchangeId, user2Transaction.ExchangeId);
+        Assert.Equal(user2.Id, user1Transaction.RelatedUserId);
+        Assert.Equal(user1.Id, user2Transaction.RelatedUserId);
+    }
+
     public void Dispose()
     {
         _context?.Dispose();
