@@ -1,44 +1,16 @@
-import { useState } from 'react';
-import { useAppSelector } from '../store/hooks';
-import { useGetUserSkillsQuery, useAddUserSkillMutation } from '../store/api/apiSlice';
+import { useGetUserSkillsQuery } from '../store/api/apiSlice';
 import { useSkillFilters } from '../hooks/useSkillFilters';
 import Navigation from '../components/Navigation';
-import SkillCard from '../components/SkillCard';
-import AddSkillModal from '../components/AddSkillModal';
 import { ActivityFeed } from '../components/ActivityFeed';
-import { useToast } from '../contexts/ToastContext';
-import { UserSkill, CreateUserSkillRequest } from '../types';
 import { GraduationCap, Clock, Star, Plus, Users, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
-  const { user } = useAppSelector((state) => state.auth);
-  const { data: userSkills = [], isLoading } = useGetUserSkillsQuery();
-  const [addUserSkill, { isLoading: isAdding }] = useAddUserSkillMutation();
-  const [isAddSkillModalOpen, setIsAddSkillModalOpen] = useState(false);
-  const { showSuccess, showError } = useToast();
+  const { data: userSkills = [] } = useGetUserSkillsQuery();
 
   // Use standardized skill filtering
-  const { validSkills, offeredSkillsCount, totalValidSkillsCount } = useSkillFilters(userSkills);
-  const previewSkills = validSkills.slice(0, 2);
+  const { offeredSkillsCount } = useSkillFilters(userSkills);
 
-  const handleAddSkill = async (skillData: Omit<UserSkill, 'id' | 'userId'>) => {
-    try {
-      const createRequest: CreateUserSkillRequest = {
-        skillId: skillData.skillId,
-        proficiencyLevel: skillData.proficiencyLevel,
-        isOffering: skillData.isOffering,
-        description: skillData.description,
-      };
-      
-      await addUserSkill(createRequest).unwrap();
-      
-      showSuccess('Skill added successfully!');
-      setIsAddSkillModalOpen(false);
-    } catch (error: any) {
-      showError('Failed to add skill', error?.data?.message || 'Please try again.');
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,7 +73,7 @@ export default function Dashboard() {
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
                         <Clock className="w-4 h-4 text-white" />
                       </div>
                     </div>
@@ -150,13 +122,6 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Add Skill Modal */}
-      <AddSkillModal
-        isOpen={isAddSkillModalOpen}
-        onClose={() => setIsAddSkillModalOpen(false)}
-        onAdd={handleAddSkill}
-        isLoading={isAdding}
-      />
     </div>
   );
 }
