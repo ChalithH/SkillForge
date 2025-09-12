@@ -54,28 +54,55 @@ namespace SkillForge.Api.Services
                     us.Skill.Name.Contains(skillName) && us.IsOffering));
             }
 
-            // Get total count before pagination
-            var totalCount = await query.CountAsync();
+            // For rating filter, we need to fetch all matching users first
+            var allUsers = await query.ToListAsync();
 
-            // Get the users
-            var users = await query
+            // Apply rating filter in memory
+            if (minRating.HasValue)
+            {
+                allUsers = allUsers.Where(u => 
+                {
+                    var avgRating = u.ReviewsReceived.Any() 
+                        ? u.ReviewsReceived.Average(r => r.Rating) 
+                        : 0.0;
+                    return avgRating >= minRating.Value;
+                }).ToList();
+            }
+
+            // Apply online filter if specified
+            if (isOnline.HasValue)
+            {
+                var filteredUsers = new List<User>();
+                foreach (var user in allUsers)
+                {
+                    var isUserOnline = await _userPresenceService.IsUserOnlineAsync(user.Id);
+                    if (isUserOnline == isOnline.Value)
+                    {
+                        filteredUsers.Add(user);
+                    }
+                }
+                allUsers = filteredUsers;
+            }
+
+            // Get total count after all filters
+            var totalCount = allUsers.Count;
+
+            // Apply pagination
+            var users = allUsers
                 .Skip(offset)
                 .Take(limit)
-                .ToListAsync();
+                .ToList();
 
             // Convert to DTOs and add online status
-            var userMatches = users.Select(u =>
+            var userMatches = new List<UserMatchDto>();
+            foreach (var u in users)
             {
                 var avgRating = u.ReviewsReceived.Any() 
                     ? u.ReviewsReceived.Average(r => r.Rating) 
                     : 0.0;
 
-                // Apply minimum rating filter after calculating average
-                if (minRating.HasValue && avgRating < minRating.Value)
-                {
-                    return null;
-                }
-
+                var isUserOnline = await _userPresenceService.IsUserOnlineAsync(u.Id);
+                
                 var dto = new UserMatchDto
                 {
                     Id = u.Id,
@@ -86,7 +113,7 @@ namespace SkillForge.Api.Services
                     TimeCredits = u.TimeCredits,
                     Rating = avgRating,
                     ReviewCount = u.ReviewsReceived.Count,
-                    IsOnline = _userPresenceService.IsUserOnlineAsync(u.Id).GetAwaiter().GetResult(),
+                    IsOnline = isUserOnline,
                     Skills = u.UserSkills.Where(us => us.IsOffering).Select(us => new UserSkillDto
                     {
                         Id = us.Id,
@@ -105,17 +132,8 @@ namespace SkillForge.Api.Services
                     }).ToList()
                 };
 
-                // Apply online filter after determining status
-                if (isOnline.HasValue && dto.IsOnline != isOnline.Value)
-                {
-                    return null;
-                }
-
-                return dto;
-            })
-            .Where(dto => dto != null)
-            .Cast<UserMatchDto>()
-            .ToList();
+                userMatches.Add(dto);
+            }
 
             return new PagedResult<UserMatchDto>
             {
