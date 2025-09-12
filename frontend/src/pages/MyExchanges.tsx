@@ -4,6 +4,7 @@ import { ExchangeTimelineModal } from '../components/ExchangeTimelineModal';
 import Navigation from '../components/Navigation';
 import { useGetExchangesQuery } from '../store/api/apiSlice';
 import { ExchangeStatus, SkillExchange } from '../types';
+import { ArrowLeftRight } from 'lucide-react';
 
 export default function MyExchanges() {
   const [activeTab, setActiveTab] = useState<'all' | ExchangeStatus>('all');
@@ -145,20 +146,7 @@ export default function MyExchanges() {
         <div className="space-y-4 sm:space-y-6">
           {exchanges.length === 0 ? (
             <div className="text-center py-8 sm:py-12 px-4">
-              <svg
-                className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3a4 4 0 118 0v4m-4 12V11m0 0a4 4 0 11-8 0V7h8"
-                />
-              </svg>
+              <ArrowLeftRight className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
               <h3 className="mt-2 text-sm sm:text-base font-medium text-gray-900">
                 {activeTab === 'all' ? 'No exchanges yet' : `No ${tabs.find(t => t.key === activeTab)?.label.toLowerCase()} exchanges`}
               </h3>
@@ -172,7 +160,7 @@ export default function MyExchanges() {
                 <div className="mt-4 sm:mt-6">
                   <button
                     type="button"
-                    onClick={() => window.location.href = '/dashboard'}
+                    onClick={() => window.location.href = '/browse'}
                     className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 border border-transparent shadow-sm text-xs sm:text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   >
                     Browse Skills
