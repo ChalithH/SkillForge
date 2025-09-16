@@ -180,16 +180,16 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
-      <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto py-4 px-4 sm:py-8 sm:px-6 lg:px-8">
         <div className="bg-white shadow rounded-lg">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Profile</h1>
               {!isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white text-sm sm:text-base rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   Edit Profile
                 </button>
@@ -198,14 +198,14 @@ export default function Profile() {
           </div>
 
           {/* Profile Content */}
-          <div className="px-6 py-6">
+          <div className="px-4 py-4 sm:px-6 sm:py-6">
             {isEditing ? (
               /* Edit Form */
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 gap-6">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6">
                   {/* Profile Image */}
-                  <div className="flex items-center space-x-6">
-                    <div className="flex-shrink-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                    <div className="flex-shrink-0 mx-auto sm:mx-0">
                       <img
                         className="h-20 w-20 rounded-full object-cover"
                         src={previewUrl || getImageUrl(formData.profileImageUrl)}
@@ -226,7 +226,7 @@ export default function Profile() {
                           type="file"
                           accept="image/*"
                           onChange={handleFileChange}
-                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          className="block w-full text-xs sm:text-sm text-gray-500 file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-md file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         />
                         <p className="text-xs text-gray-500">
                           {selectedFile ? `Selected: ${selectedFile.name}` : 'JPG, JPEG, PNG, or GIF. Max size: 5MB.'}
@@ -269,18 +269,18 @@ export default function Profile() {
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex justify-end space-x-3">
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-0 sm:space-x-3">
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full sm:w-auto px-3 py-1.5 sm:px-4 sm:py-2 border border-gray-300 rounded-md text-sm sm:text-base text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isUpdating || isUploading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white text-sm sm:text-base rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isUploading ? 'Uploading...' : isUpdating ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -288,12 +288,12 @@ export default function Profile() {
               </form>
             ) : (
               /* Display Mode */
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Profile Image and Basic Info */}
-                <div className="flex items-start space-x-6">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
                   <div className="flex-shrink-0">
                     <img
-                      className="h-24 w-24 rounded-full object-cover"
+                      className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover"
                       src={getImageUrl(user.profileImageUrl)}
                       alt="Profile"
                       onError={(e) => {

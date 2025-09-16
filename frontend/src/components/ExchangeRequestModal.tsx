@@ -151,10 +151,10 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-full max-w-lg bg-white rounded-md shadow-lg">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900">
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 p-4 sm:p-0">
+      <div className="relative top-10 sm:top-20 mx-auto sm:p-5 border w-full max-w-lg bg-white rounded-md shadow-lg">
+        <div className="flex items-center justify-between mb-4 p-4 sm:p-0">
+          <h3 className="text-base sm:text-lg font-medium text-gray-900">
             Request Skill Session
           </h3>
           <button
@@ -168,15 +168,15 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
         </div>
 
         {/* Session Summary */}
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-          <h4 className="font-medium text-blue-900 mb-2">Session Details</h4>
-          <div className="text-sm text-blue-800">
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-3 sm:p-4 mb-4 sm:mb-6 mx-4 sm:mx-0">
+          <h4 className="text-sm sm:text-base font-medium text-blue-900 mb-2">Session Details</h4>
+          <div className="text-xs sm:text-sm text-blue-800">
             <p><strong>Teacher:</strong> {targetUser.name}</p>
             <p><strong>Student:</strong> {currentUser?.name} (You)</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 px-4 sm:px-0 pb-4 sm:pb-0">
           {/* Skill Selection (if multiple skills available) */}
           {availableSkills.length > 1 && (
             <div>
@@ -303,12 +303,12 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
           </div>
 
           {/* Credit Cost Info */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2.5 sm:p-3">
             <div className="flex items-center">
-              <svg className="w-5 h-5 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
-              <div className="text-sm">
+              <div className="text-xs sm:text-sm">
                 <p className="text-yellow-800">
                   <strong>Cost:</strong> {formData.duration} time credit{formData.duration !== 1 ? 's' : ''}
                 </p>
@@ -327,18 +327,18 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading || (currentUser?.timeCredits || 0) < formData.duration}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Sending Request...' : 'Send Request'}
             </button>
