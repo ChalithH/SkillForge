@@ -184,7 +184,7 @@ export default function MySkills() {
           </div>
 
           {/* Tabs */}
-          <div className="border-b border-gray-200 mb-4 sm:mb-6 overflow-x-auto">
+          <div className="border-b border-gray-200 mb-4 sm:mb-6 overflow-x-auto overflow-y-hidden">
             <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max">
               <button
                 onClick={() => setActiveTab('offering')}
