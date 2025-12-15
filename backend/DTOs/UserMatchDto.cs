@@ -13,7 +13,7 @@ namespace SkillForge.Api.DTOs
         public int ReviewCount { get; set; }
         public bool IsOnline { get; set; }
         public List<UserSkillDto> Skills { get; set; } = new();
-        public List<UserSkillDto> SkillsOffered { get; set; } = new(); // Alias for compatibility
+        public List<MatchUserSkillDto> SkillsOffered { get; set; } = new();
         public List<MatchUserSkillDto> MatchSkills { get; set; } = new(); // For old compatibility
         public double CompatibilityScore { get; set; }
     }

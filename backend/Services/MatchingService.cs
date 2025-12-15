@@ -112,23 +112,17 @@ namespace SkillForge.Api.Services
                     ProfileImageUrl = u.ProfileImageUrl,
                     TimeCredits = u.TimeCredits,
                     Rating = avgRating,
+                    AverageRating = avgRating,
                     ReviewCount = u.ReviewsReceived.Count,
                     IsOnline = isUserOnline,
-                    Skills = u.UserSkills.Where(us => us.IsOffering).Select(us => new UserSkillDto
+                    SkillsOffered = u.UserSkills.Where(us => us.IsOffering).Select(us => new MatchUserSkillDto
                     {
                         Id = us.Id,
-                        UserId = us.UserId,
                         SkillId = us.SkillId,
+                        SkillName = us.Skill.Name,
+                        SkillCategory = us.Skill.Category,
                         ProficiencyLevel = us.ProficiencyLevel,
-                        IsOffering = us.IsOffering,
-                        Description = us.Description,
-                        Skill = new SkillDto
-                        {
-                            Id = us.Skill.Id,
-                            Name = us.Skill.Name,
-                            Category = us.Skill.Category,
-                            Description = us.Skill.Description
-                        }
+                        Description = us.Description
                     }).ToList()
                 };
 
@@ -172,23 +166,17 @@ namespace SkillForge.Api.Services
                 ProfileImageUrl = user.ProfileImageUrl,
                 TimeCredits = user.TimeCredits,
                 Rating = avgRating,
+                AverageRating = avgRating,
                 ReviewCount = user.ReviewsReceived.Count,
                 IsOnline = _userPresenceService.IsUserOnlineAsync(user.Id).GetAwaiter().GetResult(),
-                Skills = user.UserSkills.Select(us => new UserSkillDto
+                SkillsOffered = user.UserSkills.Where(us => us.IsOffering).Select(us => new MatchUserSkillDto
                 {
                     Id = us.Id,
-                    UserId = us.UserId,
                     SkillId = us.SkillId,
+                    SkillName = us.Skill.Name,
+                    SkillCategory = us.Skill.Category,
                     ProficiencyLevel = us.ProficiencyLevel,
-                    IsOffering = us.IsOffering,
-                    Description = us.Description,
-                    Skill = new SkillDto
-                    {
-                        Id = us.Skill.Id,
-                        Name = us.Skill.Name,
-                        Category = us.Skill.Category,
-                        Description = us.Skill.Description
-                    }
+                    Description = us.Description
                 }).ToList()
             };
         }
@@ -218,33 +206,30 @@ namespace SkillForge.Api.Services
                 .Take(limit)
                 .ToListAsync();
 
-            return recommendedUsers.Select(u => new UserMatchDto
-            {
-                Id = u.Id,
-                Name = u.Name,
-                Email = u.Email,
-                Bio = u.Bio,
-                ProfileImageUrl = u.ProfileImageUrl,
-                TimeCredits = u.TimeCredits,
-                Rating = u.ReviewsReceived.Any() ? u.ReviewsReceived.Average(r => r.Rating) : 0.0,
-                ReviewCount = u.ReviewsReceived.Count,
-                IsOnline = _userPresenceService.IsUserOnlineAsync(u.Id).GetAwaiter().GetResult(),
-                Skills = u.UserSkills.Where(us => us.IsOffering).Select(us => new UserSkillDto
+            return recommendedUsers.Select(u => {
+                var avgRating = u.ReviewsReceived.Any() ? u.ReviewsReceived.Average(r => r.Rating) : 0.0;
+                return new UserMatchDto
                 {
-                    Id = us.Id,
-                    UserId = us.UserId,
-                    SkillId = us.SkillId,
-                    ProficiencyLevel = us.ProficiencyLevel,
-                    IsOffering = us.IsOffering,
-                    Description = us.Description,
-                    Skill = new SkillDto
+                    Id = u.Id,
+                    Name = u.Name,
+                    Email = u.Email,
+                    Bio = u.Bio,
+                    ProfileImageUrl = u.ProfileImageUrl,
+                    TimeCredits = u.TimeCredits,
+                    Rating = avgRating,
+                    AverageRating = avgRating,
+                    ReviewCount = u.ReviewsReceived.Count,
+                    IsOnline = _userPresenceService.IsUserOnlineAsync(u.Id).GetAwaiter().GetResult(),
+                    SkillsOffered = u.UserSkills.Where(us => us.IsOffering).Select(us => new MatchUserSkillDto
                     {
-                        Id = us.Skill.Id,
-                        Name = us.Skill.Name,
-                        Category = us.Skill.Category,
-                        Description = us.Skill.Description
-                    }
-                }).ToList()
+                        Id = us.Id,
+                        SkillId = us.SkillId,
+                        SkillName = us.Skill.Name,
+                        SkillCategory = us.Skill.Category,
+                        ProficiencyLevel = us.ProficiencyLevel,
+                        Description = us.Description
+                    }).ToList()
+                };
             });
         }
 
@@ -270,33 +255,30 @@ namespace SkillForge.Api.Services
                 .Take(limit)
                 .ToListAsync();
 
-            return topUsers.Select(u => new UserMatchDto
-            {
-                Id = u.Id,
-                Name = u.Name,
-                Email = u.Email,
-                Bio = u.Bio,
-                ProfileImageUrl = u.ProfileImageUrl,
-                TimeCredits = u.TimeCredits,
-                Rating = u.ReviewsReceived.Average(r => r.Rating),
-                ReviewCount = u.ReviewsReceived.Count,
-                IsOnline = _userPresenceService.IsUserOnlineAsync(u.Id).GetAwaiter().GetResult(),
-                Skills = u.UserSkills.Where(us => us.IsOffering).Select(us => new UserSkillDto
+            return topUsers.Select(u => {
+                var avgRating = u.ReviewsReceived.Average(r => r.Rating);
+                return new UserMatchDto
                 {
-                    Id = us.Id,
-                    UserId = us.UserId,
-                    SkillId = us.SkillId,
-                    ProficiencyLevel = us.ProficiencyLevel,
-                    IsOffering = us.IsOffering,
-                    Description = us.Description,
-                    Skill = new SkillDto
+                    Id = u.Id,
+                    Name = u.Name,
+                    Email = u.Email,
+                    Bio = u.Bio,
+                    ProfileImageUrl = u.ProfileImageUrl,
+                    TimeCredits = u.TimeCredits,
+                    Rating = avgRating,
+                    AverageRating = avgRating,
+                    ReviewCount = u.ReviewsReceived.Count,
+                    IsOnline = _userPresenceService.IsUserOnlineAsync(u.Id).GetAwaiter().GetResult(),
+                    SkillsOffered = u.UserSkills.Where(us => us.IsOffering).Select(us => new MatchUserSkillDto
                     {
-                        Id = us.Skill.Id,
-                        Name = us.Skill.Name,
-                        Category = us.Skill.Category,
-                        Description = us.Skill.Description
-                    }
-                }).ToList()
+                        Id = us.Id,
+                        SkillId = us.SkillId,
+                        SkillName = us.Skill.Name,
+                        SkillCategory = us.Skill.Category,
+                        ProficiencyLevel = us.ProficiencyLevel,
+                        Description = us.Description
+                    }).ToList()
+                };
             });
         }
     }
