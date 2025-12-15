@@ -161,8 +161,8 @@ public class MatchingServiceTests : IDisposable
 
         // Assert
         Assert.Equal(2, result.Items.Count()); // Bob and Diana offer Python
-        Assert.All(result.Items, item => 
-            Assert.Contains(item.Skills, s => s.Skill.Name.Contains("Python")));
+        Assert.All(result.Items, item =>
+            Assert.Contains(item.SkillsOffered, s => s.SkillName.Contains("Python")));
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public class MatchingServiceTests : IDisposable
         Assert.Equal(4.5, result.Rating);
         Assert.Equal(2, result.ReviewCount);
         Assert.True(result.IsOnline);
-        Assert.NotEmpty(result.Skills);
+        Assert.NotEmpty(result.SkillsOffered);
     }
 
     [Fact]
@@ -252,8 +252,8 @@ public class MatchingServiceTests : IDisposable
         // Assert
         var matches = result.ToList();
         Assert.Equal(2, matches.Count); // Bob and Diana offer Python
-        Assert.All(matches, m => 
-            Assert.Contains(m.Skills, s => s.SkillId == 2 && s.IsOffering));
+        Assert.All(matches, m =>
+            Assert.Contains(m.SkillsOffered, s => s.SkillId == 2));
     }
 
     [Fact]
@@ -305,8 +305,8 @@ public class MatchingServiceTests : IDisposable
         // Assert
         var topUsers = result.ToList();
         Assert.Equal(2, topUsers.Count); // Bob and Diana offer Programming
-        Assert.All(topUsers, u => 
-            Assert.Contains(u.Skills, s => s.Skill.Category == "Programming" && s.IsOffering));
+        Assert.All(topUsers, u =>
+            Assert.Contains(u.SkillsOffered, s => s.SkillCategory == "Programming"));
     }
 
     [Fact]
@@ -338,12 +338,11 @@ public class MatchingServiceTests : IDisposable
         Assert.True(result.IsOnline);
         
         // Check skills
-        Assert.NotEmpty(result.Skills);
-        var pythonSkill = result.Skills.First(s => s.SkillId == 2);
+        Assert.NotEmpty(result.SkillsOffered);
+        var pythonSkill = result.SkillsOffered.First(s => s.SkillId == 2);
         Assert.Equal(5, pythonSkill.ProficiencyLevel);
-        Assert.True(pythonSkill.IsOffering);
-        Assert.Equal("Python", pythonSkill.Skill.Name);
-        Assert.Equal("Programming", pythonSkill.Skill.Category);
+        Assert.Equal("Python", pythonSkill.SkillName);
+        Assert.Equal("Programming", pythonSkill.SkillCategory);
     }
 
     public void Dispose()
