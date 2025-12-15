@@ -201,27 +201,54 @@ export const apiSlice = createApi({
         }
       },
     }),
-    updateExchangeStatus: builder.mutation<SkillExchange, { id: number; status: ExchangeStatus }>({
-      query: ({ id, status }) => ({
-        url: `/exchanges/${id}/status`,
-        method: 'PUT',
-        body: { status },
+    acceptExchange: builder.mutation<SkillExchange, { id: number; notes?: string }>({
+      query: ({ id, notes }) => ({
+        url: `/exchanges/${id}/accept`,
+        method: 'POST',
+        body: notes ? { notes } : {},
       }),
       invalidatesTags: ['Exchange'],
-      onQueryStarted: async ({ status }, { dispatch, queryFulfilled }) => {
+    }),
+    rejectExchange: builder.mutation<SkillExchange, { id: number; notes?: string }>({
+      query: ({ id, notes }) => ({
+        url: `/exchanges/${id}/reject`,
+        method: 'POST',
+        body: notes ? { notes } : {},
+      }),
+      invalidatesTags: ['Exchange'],
+    }),
+    cancelExchange: builder.mutation<SkillExchange, { id: number; notes?: string }>({
+      query: ({ id, notes }) => ({
+        url: `/exchanges/${id}/cancel`,
+        method: 'POST',
+        body: notes ? { notes } : {},
+      }),
+      invalidatesTags: ['Exchange'],
+    }),
+    completeExchange: builder.mutation<SkillExchange, { id: number }>({
+      query: ({ id }) => ({
+        url: `/exchanges/${id}/complete`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Exchange'],
+      onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
         try {
           await queryFulfilled;
-          
-          // If exchange was completed, refresh user data to get updated credits
-          if (status === ExchangeStatus.Completed) {
-            // Import loadUser action dynamically to avoid circular imports
-            const { loadUser } = await import('../slices/authSlice');
-            dispatch(loadUser());
-          }
+          // Refresh user data to get updated credits
+          const { loadUser } = await import('../slices/authSlice');
+          dispatch(loadUser());
         } catch (error) {
-          console.error('Failed to update exchange status:', error);
+          console.error('Failed to complete exchange:', error);
         }
       },
+    }),
+    markNoShow: builder.mutation<SkillExchange, { id: number; notes?: string }>({
+      query: ({ id, notes }) => ({
+        url: `/exchanges/${id}/no-show`,
+        method: 'POST',
+        body: notes ? { notes } : {},
+      }),
+      invalidatesTags: ['Exchange'],
     }),
     
     // User endpoints
@@ -289,7 +316,11 @@ export const {
   useUploadProfileImageMutation,
   useGetExchangesQuery,
   useCreateExchangeMutation,
-  useUpdateExchangeStatusMutation,
+  useAcceptExchangeMutation,
+  useRejectExchangeMutation,
+  useCancelExchangeMutation,
+  useCompleteExchangeMutation,
+  useMarkNoShowMutation,
   useGetCurrentUserQuery,
   useGetUserByIdQuery,
   useCreateReviewMutation,

@@ -62,7 +62,10 @@ export const ExchangeTimelineModal: React.FC<ExchangeTimelineModalProps> = ({
             <div>
               <span className="font-medium text-gray-700">Scheduled:</span>
               <span className="ml-2 text-gray-900">
-                {new Date(exchange.scheduledAt).toLocaleString()}
+                {new Date(exchange.scheduledAt).toLocaleString([], {
+                  dateStyle: 'medium',
+                  timeStyle: 'short'
+                })}
               </span>
             </div>
             {exchange.meetingLink && (

@@ -1,6 +1,11 @@
 import { SkillExchange, ExchangeStatus } from '../types';
 import { useAppSelector } from '../store/hooks';
-import { useUpdateExchangeStatusMutation } from '../store/api/apiSlice';
+import {
+  useAcceptExchangeMutation,
+  useRejectExchangeMutation,
+  useCancelExchangeMutation,
+  useCompleteExchangeMutation
+} from '../store/api/apiSlice';
 
 interface ExchangeCardProps {
   exchange: SkillExchange;
@@ -14,7 +19,12 @@ export const ExchangeCard: React.FC<ExchangeCardProps> = ({
   onJoinMeeting
 }) => {
   const currentUser = useAppSelector((state) => state.auth.user);
-  const [updateExchangeStatus, { isLoading }] = useUpdateExchangeStatusMutation();
+  const [acceptExchange, { isLoading: isAccepting }] = useAcceptExchangeMutation();
+  const [rejectExchange, { isLoading: isRejecting }] = useRejectExchangeMutation();
+  const [cancelExchange, { isLoading: isCancelling }] = useCancelExchangeMutation();
+  const [completeExchange, { isLoading: isCompleting }] = useCompleteExchangeMutation();
+
+  const isLoading = isAccepting || isRejecting || isCancelling || isCompleting;
 
   const getStatusBadge = (status: ExchangeStatus) => {
     const badges = {
@@ -61,10 +71,7 @@ export const ExchangeCard: React.FC<ExchangeCardProps> = ({
 
   const handleAccept = async () => {
     try {
-      await updateExchangeStatus({ 
-        id: exchange.id, 
-        status: ExchangeStatus.Accepted 
-      }).unwrap();
+      await acceptExchange({ id: exchange.id }).unwrap();
     } catch (error) {
       console.error('Failed to accept exchange:', error);
     }
@@ -72,10 +79,7 @@ export const ExchangeCard: React.FC<ExchangeCardProps> = ({
 
   const handleReject = async () => {
     try {
-      await updateExchangeStatus({ 
-        id: exchange.id, 
-        status: ExchangeStatus.Rejected 
-      }).unwrap();
+      await rejectExchange({ id: exchange.id }).unwrap();
     } catch (error) {
       console.error('Failed to reject exchange:', error);
     }
@@ -83,10 +87,7 @@ export const ExchangeCard: React.FC<ExchangeCardProps> = ({
 
   const handleCancel = async () => {
     try {
-      await updateExchangeStatus({ 
-        id: exchange.id, 
-        status: ExchangeStatus.Cancelled 
-      }).unwrap();
+      await cancelExchange({ id: exchange.id }).unwrap();
     } catch (error) {
       console.error('Failed to cancel exchange:', error);
     }
@@ -94,10 +95,7 @@ export const ExchangeCard: React.FC<ExchangeCardProps> = ({
 
   const handleMarkCompleted = async () => {
     try {
-      await updateExchangeStatus({ 
-        id: exchange.id, 
-        status: ExchangeStatus.Completed 
-      }).unwrap();
+      await completeExchange({ id: exchange.id }).unwrap();
     } catch (error) {
       console.error('Failed to mark as completed:', error);
     }
