@@ -100,41 +100,38 @@ export const UserCard: React.FC<UserCardProps> = ({
         )}
       </div>
 
-      {/* Bio */}
-      {user.bio && (
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{user.bio}</p>
-      )}
-
       {/* Skills Offered */}
       <div className="mb-4">
         <h4 className="font-medium text-gray-900 mb-2 flex items-center">
           <Users className="w-4 h-4 mr-1" />
           Skills Offered ({user.skillsOffered.length})
         </h4>
-        {user.skillsOffered.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {user.skillsOffered.slice(0, 4).map((skill) => (
-              <div
-                key={skill.id}
-                className="inline-flex items-center px-3 py-1 bg-green-50 text-green-800 text-xs font-medium rounded-full border border-green-200"
-              >
-                <span>{skill.skillName}</span>
-                <div className="ml-2 flex">
-                  {Array.from({ length: skill.proficiencyLevel }).map((_, i) => (
-                    <Star key={i} className="w-3 h-3 fill-green-600 text-green-600" />
-                  ))}
+        <div className="flex flex-wrap gap-2 min-h-[28px]">
+          {user.skillsOffered.length > 0 ? (
+            <>
+              {user.skillsOffered.slice(0, 2).map((skill) => (
+                <div
+                  key={skill.id}
+                  className="inline-flex items-center px-3 py-1 bg-green-50 text-green-800 text-xs font-medium rounded-full border border-green-200"
+                >
+                  <span>{skill.skillName}</span>
+                  <div className="ml-2 flex">
+                    {Array.from({ length: skill.proficiencyLevel }).map((_, i) => (
+                      <Star key={i} className="w-3 h-3 fill-green-600 text-green-600" />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-            {user.skillsOffered.length > 4 && (
-              <div className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                +{user.skillsOffered.length - 4} more
-              </div>
-            )}
-          </div>
-        ) : (
-          <p className="text-gray-500 text-sm">No skills offered yet</p>
-        )}
+              ))}
+              {user.skillsOffered.length > 2 && (
+                <div className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                  +{user.skillsOffered.length - 2} more
+                </div>
+              )}
+            </>
+          ) : (
+            <span className="text-gray-400 text-sm italic">None yet</span>
+          )}
+        </div>
       </div>
 
       {/* Action Buttons */}
