@@ -176,7 +176,6 @@ export default function MyExchanges() {
                   exchange={exchange}
                   onViewDetails={handleViewDetails}
                   onJoinMeeting={handleJoinMeeting}
-                  onViewTimeline={handleViewDetails}
                 />
               ))}
             </div>

@@ -6,14 +6,12 @@ interface ExchangeCardProps {
   exchange: SkillExchange;
   onViewDetails?: (exchange: SkillExchange) => void;
   onJoinMeeting?: (meetingLink: string) => void;
-  onViewTimeline?: (exchange: SkillExchange) => void;
 }
 
 export const ExchangeCard: React.FC<ExchangeCardProps> = ({
   exchange,
   onViewDetails,
-  onJoinMeeting,
-  onViewTimeline
+  onJoinMeeting
 }) => {
   const currentUser = useAppSelector((state) => state.auth.user);
   const [updateExchangeStatus, { isLoading }] = useUpdateExchangeStatusMutation();
@@ -45,9 +43,11 @@ export const ExchangeCard: React.FC<ExchangeCardProps> = ({
   };
 
   const isOfferer = currentUser?.id === exchange.offererId;
-  const isLearner = currentUser?.id === exchange.learnerId;
-  const otherUser = isOfferer ? exchange.learner : exchange.offerer;
+  const otherUserName = isOfferer
+    ? (exchange.learner?.name || exchange.learnerName || 'Unknown User')
+    : (exchange.offerer?.name || exchange.offererName || 'Unknown User');
   const role = isOfferer ? 'Teaching' : 'Learning';
+  const skillDisplayName = exchange.skill?.name || exchange.skillName || `Skill ID: ${exchange.skillId}`;
 
   const formatDateTime = (dateTime: string) => {
     const date = new Date(dateTime);
@@ -114,7 +114,7 @@ export const ExchangeCard: React.FC<ExchangeCardProps> = ({
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 leading-tight">
-              {exchange.skill?.name || `Skill ID: ${exchange.skillId}`}
+              {skillDisplayName}
             </h3>
             <div className="self-start sm:self-auto">
               {getStatusBadge(exchange.status)}
@@ -124,7 +124,7 @@ export const ExchangeCard: React.FC<ExchangeCardProps> = ({
           <div className="text-sm text-gray-600 mb-2">
             <span className="font-medium">{role}</span> with{' '}
             <span className="font-medium text-gray-900">
-              {otherUser?.name || 'Unknown User'}
+              {otherUserName}
             </span>
           </div>
 
@@ -208,22 +208,12 @@ export const ExchangeCard: React.FC<ExchangeCardProps> = ({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => onViewDetails?.(exchange)}
-            className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-600 text-xs sm:text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-          >
-            View Details
-          </button>
-          {onViewTimeline && (
-            <button
-              onClick={() => onViewTimeline(exchange)}
-              className="px-3 py-1.5 sm:px-4 sm:py-2 text-blue-600 text-xs sm:text-sm border border-blue-300 rounded-md hover:bg-blue-50 transition-colors"
-            >
-              Timeline
-            </button>
-          )}
-        </div>
+        <button
+          onClick={() => onViewDetails?.(exchange)}
+          className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-600 text-xs sm:text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+        >
+          View Details
+        </button>
       </div>
     </div>
   );

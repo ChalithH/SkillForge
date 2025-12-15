@@ -143,6 +143,7 @@ export const ExchangeTimeline: React.FC<ExchangeTimelineProps> = ({
   };
 
   const { date, time } = formatDateTime(exchange.scheduledAt);
+  const skillDisplayName = exchange.skill?.name || exchange.skillName || `Skill ID: ${exchange.skillId}`;
 
   return (
     <div className={`bg-white rounded-lg border border-gray-200 p-4 sm:p-6 ${className}`}>
@@ -151,7 +152,7 @@ export const ExchangeTimeline: React.FC<ExchangeTimelineProps> = ({
           Exchange Timeline
         </h3>
         <p className="text-xs sm:text-sm text-gray-600">
-          {exchange.skill?.name} • {date} at {time}
+          {skillDisplayName} • {date} at {time}
         </p>
       </div>
       

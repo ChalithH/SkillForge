@@ -18,8 +18,13 @@ export const ExchangeTimelineModal: React.FC<ExchangeTimelineModalProps> = ({
   if (!isOpen || !exchange) return null;
 
   const isOfferer = currentUser?.id === exchange.offererId;
-  const otherUser = isOfferer ? exchange.learner : exchange.offerer;
+  const otherUserName = isOfferer
+    ? (exchange.learner?.name || exchange.learnerName || 'Unknown User')
+    : (exchange.offerer?.name || exchange.offererName || 'Unknown User');
   const role = isOfferer ? 'Teaching' : 'Learning';
+  const skillDisplayName = exchange.skill?.name || exchange.skillName || `Skill ID: ${exchange.skillId}`;
+  const offererDisplayName = exchange.offerer?.name || exchange.offererName || 'Unknown';
+  const learnerDisplayName = exchange.learner?.name || exchange.learnerName || 'Unknown';
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -31,9 +36,9 @@ export const ExchangeTimelineModal: React.FC<ExchangeTimelineModalProps> = ({
               Exchange Details
             </h2>
             <div className="mt-1 text-sm text-gray-600">
-              <span className="font-medium">{role}</span> {exchange.skill?.name} with{' '}
+              <span className="font-medium">{role}</span> {skillDisplayName} with{' '}
               <span className="font-medium text-gray-900">
-                {otherUser?.name || 'Unknown User'}
+                {otherUserName}
               </span>
             </div>
           </div>
@@ -86,15 +91,13 @@ export const ExchangeTimelineModal: React.FC<ExchangeTimelineModalProps> = ({
           <div className="p-3 sm:p-4 border border-gray-200 rounded-lg">
             <h4 className="font-medium text-gray-900 mb-2">Teacher</h4>
             <div className="text-sm text-gray-600">
-              <p className="font-medium text-gray-900">{exchange.offerer?.name || 'Unknown'}</p>
-              <p>Time Credits: {exchange.offerer?.timeCredits || 0}</p>
+              <p className="font-medium text-gray-900">{offererDisplayName}</p>
             </div>
           </div>
           <div className="p-3 sm:p-4 border border-gray-200 rounded-lg">
             <h4 className="font-medium text-gray-900 mb-2">Student</h4>
             <div className="text-sm text-gray-600">
-              <p className="font-medium text-gray-900">{exchange.learner?.name || 'Unknown'}</p>
-              <p>Time Credits: {exchange.learner?.timeCredits || 0}</p>
+              <p className="font-medium text-gray-900">{learnerDisplayName}</p>
             </div>
           </div>
         </div>

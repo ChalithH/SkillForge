@@ -68,10 +68,16 @@ export interface SkillExchange {
   id: number;
   offererId: number;
   offerer?: User;
+  offererName?: string;
+  offererProfileImageUrl?: string;
   learnerId: number;
   learner?: User;
+  learnerName?: string;
+  learnerProfileImageUrl?: string;
   skillId: number;
   skill?: Skill;
+  skillName?: string;
+  skillCategory?: string;
   scheduledAt: string;
   duration: number;
   status: ExchangeStatus;
@@ -80,6 +86,8 @@ export interface SkillExchange {
   createdAt: string;
   updatedAt: string;
   reviews: Review[];
+  canReview?: boolean;
+  hasReviewed?: boolean;
 }
 
 export interface Review {
