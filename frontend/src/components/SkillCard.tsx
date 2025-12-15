@@ -1,5 +1,5 @@
 import { Skill, UserSkill } from '../types';
-import { GraduationCap, BookOpen } from 'lucide-react';
+import { GraduationCap, BookOpen, Trash2 } from 'lucide-react';
 
 interface SkillCardProps {
   skill: Skill;
@@ -39,82 +39,75 @@ export default function SkillCard({
   const proficiencyLevel = userSkill?.proficiencyLevel || 0;
 
   return (
-    <div 
+    <div
       className={`
-        bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200
+        bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200 relative
         ${onClick ? 'cursor-pointer hover:border-blue-300' : ''}
       `}
       onClick={onClick}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{skill.name}</h3>
-          
-          {/* Category Badge */}
-          <div className="mb-2">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              {skill.category}
-            </span>
+      <h3 className="text-lg font-semibold text-gray-900 mb-1">{skill.name}</h3>
+
+      {/* Category Badge */}
+      <div className="mb-2">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          {skill.category}
+        </span>
+      </div>
+
+      {/* Description */}
+      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+        {skill.description}
+      </p>
+
+      {/* User's proficiency and offering status */}
+      {userSkill && (
+        <div className="space-y-2">
+          <div>
+            <span className="text-sm font-medium text-gray-700">Your level:</span>
+            <div className="mt-1">
+              <StarRating rating={proficiencyLevel} />
+            </div>
           </div>
 
-          {/* Description */}
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-            {skill.description}
-          </p>
-
-          {/* User's proficiency and offering status */}
-          {userSkill && (
-            <div className="space-y-2">
-              <div>
-                <span className="text-sm font-medium text-gray-700">Your level:</span>
-                <div className="mt-1">
-                  <StarRating rating={proficiencyLevel} />
-                </div>
-              </div>
-              
-              {userSkill.description && (
-                <div>
-                  <span className="text-sm font-medium text-gray-700">Your notes:</span>
-                  <p className="text-sm text-gray-600 mt-1">{userSkill.description}</p>
-                </div>
-              )}
-
-              <div className="flex items-center space-x-2">
-                <span className={`
-                  inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                  ${isOffering 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-blue-100 text-blue-800'
-                  }
-                `}>
-                  {isOffering ? (
-                    <><GraduationCap className="w-3 h-3 mr-1" /> I can teach</>
-                  ) : (
-                    <><BookOpen className="w-3 h-3 mr-1" /> I want to learn</>
-                  )}
-                </span>
-              </div>
+          {userSkill.description && (
+            <div>
+              <span className="text-sm font-medium text-gray-700">Your notes:</span>
+              <p className="text-sm text-gray-600 mt-1">{userSkill.description}</p>
             </div>
           )}
-        </div>
 
-        {/* Action buttons */}
-        {showActions && userSkill && (
-          <div className="flex flex-col space-y-2 ml-4">
-            {onDelete && (
+          <div className="flex items-center justify-between">
+            <span className={`
+              inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+              ${isOffering
+                ? 'bg-green-100 text-green-800'
+                : 'bg-blue-100 text-blue-800'
+              }
+            `}>
+              {isOffering ? (
+                <><GraduationCap className="w-3 h-3 mr-1" /> I can teach</>
+              ) : (
+                <><BookOpen className="w-3 h-3 mr-1" /> I want to learn</>
+              )}
+            </span>
+
+            {/* Delete button */}
+            {showActions && onDelete && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(userSkill.id);
                 }}
-                className="text-red-600 hover:text-red-800 text-sm font-medium"
+                className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                title="Remove skill"
               >
-                Remove
+                <Trash2 className="w-4 h-4" />
               </button>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
