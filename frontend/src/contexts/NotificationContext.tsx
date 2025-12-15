@@ -76,7 +76,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       {children}
       
       {/* Render active toasts */}
-      <div className="fixed top-0 right-0 z-50 p-4 space-y-2">
+      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 space-y-2">
         {activeToasts.map((toast, index) => (
           <div
             key={toast.id}

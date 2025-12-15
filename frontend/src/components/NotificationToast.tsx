@@ -148,9 +148,9 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
   return (
     <div
       className={`
-        fixed z-50 top-4 right-4 max-w-sm w-full
-        transform transition-all duration-300 ease-in-out
-        ${isVisible && !isClosing ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
+        max-w-sm w-full
+        transition-all duration-300 ease-in-out
+        ${isVisible && !isClosing ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}
       `}
     >
       <div className={`
