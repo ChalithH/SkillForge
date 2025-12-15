@@ -30,9 +30,23 @@ export default function Register() {
     };
   }, [dispatch]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setValidationError('');
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleSubmit = () => {
+    // Validate all fields filled
+    if (!formData.name || !formData.email || !formData.password || !confirmPassword) {
+      setValidationError('Please fill in all fields');
+      return;
+    }
+
+    // Validate email format
+    if (!validateEmail(formData.email)) {
+      setValidationError('Please enter a valid email address');
+      return;
+    }
 
     // Validate passwords match
     if (formData.password !== confirmPassword) {
@@ -46,6 +60,9 @@ export default function Register() {
       return;
     }
 
+    // Clear validation error only if we're about to make API call
+    // Don't clear API error - the pending state handles that
+    if (validationError) setValidationError('');
     dispatch(register(formData));
   };
 
@@ -75,12 +92,12 @@ export default function Register() {
             </Link>
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {(error || validationError) && (
-            <div className="rounded-md bg-red-50 p-4">
+        <form className="mt-8 space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <div className={`rounded-md p-4 min-h-[52px] transition-colors ${(error || validationError) ? 'bg-red-50' : 'bg-transparent'}`}>
+            {(error || validationError) && (
               <div className="text-sm text-red-800">{validationError || error}</div>
-            </div>
-          )}
+            )}
+          </div>
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -150,8 +167,9 @@ export default function Register() {
 
           <div>
             <button
-              type="submit"
-              disabled={isLoading}
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading || !formData.name || !formData.email || !formData.password || !confirmPassword}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Creating account...' : 'Create account'}

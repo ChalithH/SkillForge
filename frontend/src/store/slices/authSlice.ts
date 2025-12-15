@@ -22,19 +22,29 @@ const initialState: AuthState = {
 
 export const login = createAsyncThunk(
   'auth/login',
-  async (credentials: LoginRequest) => {
-    const response = await authService.login(credentials);
-    localStorage.setItem('token', response.token);
-    return response;
+  async (credentials: LoginRequest, { rejectWithValue }) => {
+    try {
+      const response = await authService.login(credentials);
+      localStorage.setItem('token', response.token);
+      return response;
+    } catch (error: any) {
+      const message = error.response?.data?.message || error.response?.data || error.message || 'Login failed';
+      return rejectWithValue(message);
+    }
   }
 );
 
 export const register = createAsyncThunk(
   'auth/register',
-  async (userData: RegisterRequest) => {
-    const response = await authService.register(userData);
-    localStorage.setItem('token', response.token);
-    return response;
+  async (userData: RegisterRequest, { rejectWithValue }) => {
+    try {
+      const response = await authService.register(userData);
+      localStorage.setItem('token', response.token);
+      return response;
+    } catch (error: any) {
+      const message = error.response?.data?.message || error.response?.data || error.message || 'Registration failed';
+      return rejectWithValue(message);
+    }
   }
 );
 
@@ -93,7 +103,7 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message || 'Login failed';
+        state.error = (action.payload as string) || 'Login failed';
       })
       // Register
       .addCase(register.pending, (state) => {
@@ -115,7 +125,7 @@ const authSlice = createSlice({
       })
       .addCase(register.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message || 'Registration failed';
+        state.error = (action.payload as string) || 'Registration failed';
       })
       // Load User
       .addCase(loadUser.pending, (state) => {

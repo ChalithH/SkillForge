@@ -8,11 +8,12 @@ export default function Login() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
-  
+
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: '',
   });
+  const [validationError, setValidationError] = useState('');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -27,8 +28,25 @@ export default function Login() {
     };
   }, [dispatch]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleSubmit = () => {
+    if (!formData.email || !formData.password) {
+      setValidationError('Please fill in all fields');
+      return;
+    }
+
+    if (!validateEmail(formData.email)) {
+      setValidationError('Please enter a valid email address');
+      return;
+    }
+
+    // Clear validation error only if we're about to make API call
+    // Don't clear API error - the pending state handles that
+    if (validationError) setValidationError('');
     dispatch(login(formData));
   };
 
@@ -53,15 +71,15 @@ export default function Login() {
             </Link>
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-800">{error}</div>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
+        <form className="mt-8 space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <div className={`rounded-md p-4 min-h-[52px] transition-colors ${(error || validationError) ? 'bg-red-50' : 'bg-transparent'}`}>
+            {(error || validationError) && (
+              <div className="text-sm text-red-800">{validationError || error}</div>
+            )}
+          </div>
+          <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="sr-only">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
               <input
@@ -72,12 +90,12 @@ export default function Login() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                placeholder="john@example.com"
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
@@ -88,16 +106,17 @@ export default function Login() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                placeholder="Enter your password"
               />
             </div>
           </div>
 
           <div>
             <button
-              type="submit"
-              disabled={isLoading}
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading || !formData.email || !formData.password}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
