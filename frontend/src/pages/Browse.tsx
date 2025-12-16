@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import Navigation from '../components/Navigation';
 import { UserCard } from '../components/UserCard';
 import { ExchangeRequestModal } from '../components/ExchangeRequestModal';
+import { SkillNetworkGraph } from '../components/SkillNetworkGraph';
 import { useBrowseUsersQuery, useGetRecommendationsQuery, useGetSkillCategoriesQuery } from '../store/api/apiSlice';
 import { useAppSelector } from '../store/hooks';
 import { useNotifications } from '../contexts/NotificationContext';
 import { UserMatchDto, BrowseFilters } from '../types';
-import { Search, Filter, Users, TrendingUp, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Filter, Users, TrendingUp, Loader2, ChevronLeft, ChevronRight, Network } from 'lucide-react';
 
 export default function Browse() {
   const { user } = useAppSelector((state) => state.auth);
@@ -18,7 +19,7 @@ export default function Browse() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserMatchDto | null>(null);
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'browse' | 'recommendations'>('browse');
+  const [activeTab, setActiveTab] = useState<'browse' | 'recommendations' | 'network'>('browse');
 
   const { data: browseResult, isLoading: isBrowseLoading, error: browseError } = useBrowseUsersQuery(filters);
   const { data: recommendations = [], isLoading: isRecommendationsLoading } = useGetRecommendationsQuery(10);
@@ -90,6 +91,17 @@ export default function Browse() {
             >
               <TrendingUp className="w-4 h-4 inline mr-1 sm:mr-2" />
               <span className="text-xs sm:text-sm">Recommended for You</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('network')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                activeTab === 'network'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Network className="w-4 h-4 inline mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">Skill Network</span>
             </button>
           </nav>
         </div>
@@ -344,6 +356,10 @@ export default function Browse() {
             )}
           </div>
         )}
+
+        {activeTab === 'network' && (
+          <SkillNetworkGraph onUserClick={handleRequestExchange} />
+        )}
       </div>
 
       {/* Exchange Request Modal */}
@@ -365,7 +381,7 @@ export default function Browse() {
           skills={selectedUser.skillsOffered.map(s => ({
             id: s.skillId,
             name: s.skillName,
-            category: s.skillCategory || s.category,
+            category: s.skillCategory,
             description: s.description || '',
           }))}
           onSuccess={() => {
