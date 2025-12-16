@@ -2,8 +2,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Menu, Coins, TrendingUp, TrendingDown, X } from 'lucide-react';
+import { Menu, Coins, TrendingUp, TrendingDown, X } from 'lucide-react';
 import { NotificationBadge } from './NotificationBadge';
+import { NotificationDropdown } from './NotificationDropdown';
 import { usePendingRequests } from '../hooks/usePendingRequests';
 
 export default function Navigation() {
@@ -15,7 +16,7 @@ export default function Navigation() {
   const [creditChange, setCreditChange] = useState<'increase' | 'decrease' | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const { incomingCount, totalPendingCount } = usePendingRequests();
+  const { incomingCount } = usePendingRequests();
 
   // Track credit changes for visual feedback
   useEffect(() => {
@@ -112,22 +113,8 @@ export default function Navigation() {
             </div>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
-            {/* Notification Bell */}
-            <div className="relative">
-              <Link
-                to="/exchanges"
-                className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-                title={`${incomingCount} pending request${incomingCount !== 1 ? 's' : ''}`}
-              >
-                <Bell className="h-5 w-5" />
-              </Link>
-              {incomingCount > 0 && (
-                <NotificationBadge 
-                  count={incomingCount} 
-                  className="absolute -top-1 -right-1 min-w-[18px] h-[18px] text-[10px]"
-                />
-              )}
-            </div>
+            {/* Notification Dropdown */}
+            <NotificationDropdown pendingCount={incomingCount} />
             
             {/* Credit Balance with Animation */}
             <div className="flex items-center space-x-1">
@@ -200,22 +187,8 @@ export default function Navigation() {
                   )}
                 </div>
 
-                {/* Notification Bell Mobile */}
-                <div className="relative">
-                  <Link
-                    to="/exchanges"
-                    className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-                    title={`${incomingCount} pending request${incomingCount !== 1 ? 's' : ''}`}
-                  >
-                    <Bell className="h-5 w-5" />
-                  </Link>
-                  {incomingCount > 0 && (
-                    <NotificationBadge
-                      count={incomingCount}
-                      className="absolute -top-1 -right-1 min-w-[18px] h-[18px] text-[10px]"
-                    />
-                  )}
-                </div>
+                {/* Notification Dropdown Mobile */}
+                <NotificationDropdown pendingCount={incomingCount} />
               </div>
 
               <div className="mt-3 px-4">

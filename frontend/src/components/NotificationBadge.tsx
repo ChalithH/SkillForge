@@ -18,7 +18,7 @@ export const NotificationBadge: React.FC<NotificationBadgeProps> = ({
   const displayCount = count > maxCount ? `${maxCount}+` : count.toString();
 
   return (
-    <span className={`inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full ${className}`}>
+    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full ${className}`}>
       {displayCount}
     </span>
   );

@@ -17,24 +17,25 @@ namespace SkillForge.Api.Services
 
         public async Task SendExchangeRequestNotificationAsync(SkillExchange exchange)
         {
-            var message = $"New skill exchange request from {exchange.Offerer?.Name ?? "Unknown"} for {exchange.Skill?.Name ?? "Unknown skill"}";
-            
-            await _hubContext.Clients.Group($"User_{exchange.LearnerId}")
+            // Notification goes to the Offerer (skill provider) about an incoming request from the Learner
+            var message = $"New skill exchange request from {exchange.Learner?.Name ?? "Unknown"} for {exchange.Skill?.Name ?? "Unknown skill"}";
+
+            await _hubContext.Clients.Group($"User_{exchange.OffererId}")
                 .SendAsync("ReceiveNotification", new
                 {
                     Type = "exchange_request",
                     Message = message,
                     ExchangeId = exchange.Id,
-                    SenderId = exchange.OffererId,
-                    SenderName = exchange.Offerer?.Name,
+                    SenderId = exchange.LearnerId,
+                    SenderName = exchange.Learner?.Name,
                     SkillName = exchange.Skill?.Name,
                     ScheduledAt = exchange.ScheduledAt,
                     Duration = exchange.Duration,
                     Timestamp = DateTime.UtcNow
                 });
 
-            _logger.LogInformation("Sent exchange request notification to user {LearnerId} for exchange {ExchangeId}", 
-                exchange.LearnerId, exchange.Id);
+            _logger.LogInformation("Sent exchange request notification to user {OffererId} for exchange {ExchangeId}",
+                exchange.OffererId, exchange.Id);
         }
 
         public async Task SendExchangeStatusUpdateNotificationAsync(SkillExchange exchange, ExchangeStatus previousStatus)
@@ -49,9 +50,11 @@ namespace SkillForge.Api.Services
                 _ => $"updated the status of your skill exchange to {exchange.Status}"
             };
 
-            var targetUserId = exchange.Status == ExchangeStatus.Accepted || exchange.Status == ExchangeStatus.Rejected 
-                ? exchange.OffererId  // Notify the offerer about learner's response
-                : exchange.LearnerId; // Notify the learner about other status changes
+            // Offerer accepts/rejects requests → notify the Learner who sent the request
+            // For other status changes, notify the Learner (simplification - ideally we'd know who triggered the action)
+            var targetUserId = exchange.Status == ExchangeStatus.Accepted || exchange.Status == ExchangeStatus.Rejected
+                ? exchange.LearnerId  // Notify the learner about offerer's response to their request
+                : exchange.LearnerId; // Notify the learner about other status changes (e.g., offerer cancelled)
 
             var actorName = targetUserId == exchange.OffererId ? exchange.Learner?.Name : exchange.Offerer?.Name;
             var message = $"{actorName ?? "Someone"} {statusMessage}";

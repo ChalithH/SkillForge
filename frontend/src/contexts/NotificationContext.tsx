@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { NotificationToast } from '../components/NotificationToast';
 import { useSignalR, SignalRNotification } from '../hooks/useSignalR';
+import { useAppDispatch } from '../store/hooks';
+import { apiSlice } from '../store/api/apiSlice';
 
 interface NotificationContextType {
   showToast: (notification: Omit<SignalRNotification, 'timestamp'>) => void;
@@ -31,18 +33,25 @@ interface ActiveToast extends SignalRNotification {
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const [activeToasts, setActiveToasts] = useState<ActiveToast[]>([]);
   const signalR = useSignalR();
+  const dispatch = useAppDispatch();
 
   // Listen for SignalR notifications
   useEffect(() => {
     const removeListener = signalR.addNotificationListener((notification) => {
       const id = `${Date.now()}-${Math.random()}`;
       const toast: ActiveToast = { ...notification, id };
-      
+
       setActiveToasts(prev => [...prev, toast]);
+
+      // Invalidate Exchange cache when exchange-related notifications arrive
+      // This ensures badge counts update in real-time
+      if (notification.type === 'exchange_request' || notification.type === 'exchange_status_update') {
+        dispatch(apiSlice.util.invalidateTags(['Exchange']));
+      }
     });
 
     return removeListener;
-  }, [signalR.addNotificationListener]);
+  }, [signalR.addNotificationListener, dispatch]);
 
   const showToast = (notification: Omit<SignalRNotification, 'timestamp'>) => {
     const id = `${Date.now()}-${Math.random()}`;
