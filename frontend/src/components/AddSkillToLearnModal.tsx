@@ -75,7 +75,7 @@ export default function AddSkillToLearnModal({
       isOpen={isOpen}
       onClose={handleClose}
       title="Add Skill to Learn"
-      subtitle="Discover new skills and connect with teachers in the community"
+      subtitle="Discover new skills and connect with experienced members"
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,7 +106,7 @@ export default function AddSkillToLearnModal({
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Your current level
-            <span className="text-xs text-gray-500 ml-1">(be honest - this helps match you with the right teachers)</span>
+            <span className="text-xs text-gray-500 ml-1">(be honest - this helps match you with the right partners)</span>
           </label>
           <StarRating
             level={proficiencyLevel}
@@ -139,7 +139,7 @@ export default function AddSkillToLearnModal({
             <div className="ml-2">
               <h4 className="text-sm font-medium text-blue-800">Learning Benefits</h4>
               <p className="text-xs text-blue-700 mt-1">
-                Use your time credits to learn from experienced teachers. Each hour of learning costs 1 time credit.
+                Connect with experienced members to learn new skills and grow together.
               </p>
             </div>
           </div>

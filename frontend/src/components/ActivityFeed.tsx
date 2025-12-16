@@ -108,19 +108,6 @@ export const ActivityFeed: React.FC = () => {
       );
     }
 
-    if (activity.type === 'credit_transfer' && activity.amount) {
-      return (
-        <div className="text-xs text-gray-600 mt-1">
-          <span className="font-medium">Amount:</span> {activity.amount > 0 ? '+' : ''}{activity.amount} credits
-          {activity.reason && (
-            <div className="mt-1">
-              <span className="font-medium">Reason:</span> {activity.reason}
-            </div>
-          )}
-        </div>
-      );
-    }
-
     return null;
   };
 
@@ -132,7 +119,7 @@ export const ActivityFeed: React.FC = () => {
           <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">No recent activity</p>
           <p className="text-sm text-gray-500 mt-1">
-            Activity will appear here when you start learning and teaching
+            Activity will appear here when you start exchanging skills
           </p>
         </div>
       </div>

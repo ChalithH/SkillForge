@@ -75,7 +75,7 @@ export default function AddSkillToTeachModal({
       isOpen={isOpen}
       onClose={handleClose}
       title="Add Skill to Teach"
-      subtitle="Share your expertise with others and earn time credits"
+      subtitle="Share your expertise with the community"
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -139,7 +139,7 @@ export default function AddSkillToTeachModal({
             <div className="ml-2">
               <h4 className="text-sm font-medium text-green-800">Teaching Benefits</h4>
               <p className="text-xs text-green-700 mt-1">
-                Earn 1 time credit for every hour you teach. Build your reputation and help others grow their skills.
+                Build your reputation and help others grow their skills.
               </p>
             </div>
           </div>

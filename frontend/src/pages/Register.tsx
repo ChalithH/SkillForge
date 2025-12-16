@@ -177,7 +177,7 @@ export default function Register() {
           </div>
 
           <div className="text-center text-sm text-gray-600">
-            By registering, you'll receive 5 free time credits to start exchanging skills!
+            Join our community and start exchanging skills with others!
           </div>
         </form>
       </div>

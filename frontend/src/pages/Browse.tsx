@@ -63,8 +63,8 @@ export default function Browse() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header */}
         <div className="mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Find Teachers</h1>
-          <p className="text-sm sm:text-base text-gray-600">Find teachers for skills you want to learn based on your interests.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Find Skill Partners</h1>
+          <p className="text-sm sm:text-base text-gray-600">Connect with members who can help you learn new skills.</p>
         </div>
 
         {/* Tabs */}
@@ -79,7 +79,7 @@ export default function Browse() {
               }`}
             >
               <Search className="w-4 h-4 inline mr-1 sm:mr-2" />
-              <span className="text-xs sm:text-sm">Browse Teachers</span>
+              <span className="text-xs sm:text-sm">Browse Members</span>
             </button>
             <button
               onClick={() => setActiveTab('recommendations')}

@@ -12,10 +12,10 @@ import AddSkillToTeachModal from '../components/AddSkillToTeachModal';
 import AddSkillToLearnModal from '../components/AddSkillToLearnModal';
 import { useToast } from '../contexts/ToastContext';
 import { UserSkill, CreateUserSkillRequest } from '../types';
-import { GraduationCap, BookOpen, Coins } from 'lucide-react';
+import { GraduationCap, BookOpen } from 'lucide-react';
 
 export default function MySkills() {
-  const { user } = useAppSelector((state) => state.auth);
+  useAppSelector((state) => state.auth); // auth state available if needed
   const { data: userSkills = [], isLoading } = useGetUserSkillsQuery();
   const [addUserSkill, { isLoading: isAdding }] = useAddUserSkillMutation();
   const [deleteUserSkill] = useDeleteUserSkillMutation();
@@ -159,27 +159,6 @@ export default function MySkills() {
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-4 sm:p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
-                        <Coins className="w-4 h-4 text-white" />
-                      </div>
-                    </div>
-                    <div className="ml-3 sm:ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          Time Credits
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {user?.timeCredits || 0}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 

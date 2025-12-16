@@ -72,7 +72,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ pend
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="text-gray-400 hover:text-gray-600 transition-colors p-1 relative"
+        className="text-gray-500 hover:text-gray-700 transition-colors p-2 relative flex items-center"
         title={`${totalCount} notification${totalCount !== 1 ? 's' : ''}`}
       >
         <Bell className="h-5 w-5" />

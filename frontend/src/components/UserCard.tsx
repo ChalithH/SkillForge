@@ -151,7 +151,7 @@ export const UserCard: React.FC<UserCardProps> = ({
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
-          title={user.skillsOffered.length === 0 ? 'This user has no skills to teach' : 'Request a learning session'}
+          title={user.skillsOffered.length === 0 ? 'This user has no skills to offer' : 'Request a session'}
         >
           <Clock className="w-4 h-4 mr-1" />
           Request Session

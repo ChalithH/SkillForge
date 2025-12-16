@@ -171,8 +171,8 @@ export const ExchangeRequestModal: React.FC<ExchangeRequestModalProps> = ({
         <div className="bg-blue-50 border border-blue-200 rounded-md p-3 sm:p-4 mb-4 sm:mb-6 mx-4 sm:mx-0">
           <h4 className="text-sm sm:text-base font-medium text-blue-900 mb-2">Session Details</h4>
           <div className="text-xs sm:text-sm text-blue-800">
-            <p><strong>Teacher:</strong> {targetUser.name}</p>
-            <p><strong>Student:</strong> {currentUser?.name} (You)</p>
+            <p><strong>Partner:</strong> {targetUser.name}</p>
+            <p><strong>Requester:</strong> {currentUser?.name} (You)</p>
           </div>
         </div>
 
