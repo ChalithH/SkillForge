@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
+import { apiSlice } from '../store/api/apiSlice';
 import { useState, useEffect, useRef } from 'react';
 import { Menu, Coins, TrendingUp, TrendingDown, X } from 'lucide-react';
 import { NotificationBadge } from './NotificationBadge';
@@ -53,6 +54,7 @@ export default function Navigation() {
 
   const handleLogout = () => {
     dispatch(logout());
+    dispatch(apiSlice.util.resetApiState());
     navigate('/login');
   };
 

@@ -15,9 +15,21 @@ export default function MyExchanges() {
   // TODO: Add pagination/filtering when user base grows
   const { data: allExchanges = [], isLoading, error } = useGetExchangesQuery(undefined);
   
-  // Filter exchanges based on active tab
+  // Filter and sort exchanges based on active tab
   const exchanges = useMemo(() => {
-    if (activeTab === 'all') return allExchanges;
+    if (activeTab === 'all') {
+      // Sort by status priority: Pending first, then Accepted, then others
+      return [...allExchanges].sort((a, b) => {
+        const priorityOrder = [ExchangeStatus.Pending, ExchangeStatus.Accepted];
+        const aPriority = priorityOrder.indexOf(a.status);
+        const bPriority = priorityOrder.indexOf(b.status);
+
+        if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
+        if (aPriority !== -1) return -1;
+        if (bPriority !== -1) return 1;
+        return 0;
+      });
+    }
     return allExchanges.filter(exchange => exchange.status === activeTab);
   }, [allExchanges, activeTab]);
 
