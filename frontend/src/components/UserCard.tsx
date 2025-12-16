@@ -13,7 +13,7 @@ interface UserCardProps {
 
 export const UserCard: React.FC<UserCardProps> = ({
   user,
-  onViewProfile,
+  onViewProfile: _onViewProfile,
   onRequestExchange,
   showCompatibilityScore = true,
 }) => {

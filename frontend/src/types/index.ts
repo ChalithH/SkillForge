@@ -2,7 +2,7 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  timeCredits: number;
+  timeCredits?: number;
   bio?: string;
   profileImageUrl?: string;
 }

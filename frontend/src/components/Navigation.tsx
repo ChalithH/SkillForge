@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
 import { apiSlice } from '../store/api/apiSlice';
 import { useState, useEffect, useRef } from 'react';
-import { Menu, Coins, TrendingUp, TrendingDown, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { NotificationBadge } from './NotificationBadge';
 import { NotificationDropdown } from './NotificationDropdown';
 import { usePendingRequests } from '../hooks/usePendingRequests';
@@ -12,24 +12,10 @@ export default function Navigation() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
-  const [previousCredits, setPreviousCredits] = useState<number | null>(null);
-  const [creditChange, setCreditChange] = useState<'increase' | 'decrease' | null>(null);
+  useAppSelector((state) => state.auth); // auth state available if needed
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const { incomingCount } = usePendingRequests();
-
-  // Track credit changes for visual feedback
-  useEffect(() => {
-    if (user?.timeCredits !== undefined) {
-      if (previousCredits !== null && previousCredits !== user.timeCredits) {
-        setCreditChange(user.timeCredits > previousCredits ? 'increase' : 'decrease');
-        // Clear the change indicator after animation
-        setTimeout(() => setCreditChange(null), 2000);
-      }
-      setPreviousCredits(user.timeCredits);
-    }
-  }, [user?.timeCredits, previousCredits]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -117,25 +103,7 @@ export default function Navigation() {
           <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Notification Dropdown */}
             <NotificationDropdown pendingCount={incomingCount} />
-            
-            {/* Credit Balance with Animation */}
-            <div className="flex items-center space-x-1">
-              <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-all duration-500 ${
-                creditChange === 'increase' ? 'bg-amber-200 text-amber-900 scale-110' :
-                creditChange === 'decrease' ? 'bg-red-200 text-red-900 scale-110' :
-                'bg-amber-100 text-amber-800'
-              }`}>
-                <Coins className="w-3 h-3 mr-1" />
-                {user?.timeCredits || 0} credits
-                {creditChange === 'increase' && (
-                  <TrendingUp className="w-3 h-3 ml-1 text-amber-600" />
-                )}
-                {creditChange === 'decrease' && (
-                  <TrendingDown className="w-3 h-3 ml-1 text-red-600" />
-                )}
-              </div>
-            </div>
-            
+
             <button
               onClick={handleLogout}
               className="text-gray-500 hover:text-gray-700 px-2 sm:px-3 py-2 text-sm font-medium transition-colors"
@@ -172,23 +140,7 @@ export default function Navigation() {
               ))}
             </div>
             <div className="pt-3 pb-3 border-t border-gray-200">
-              <div className="flex items-center px-4 space-x-3">
-                {/* Credit Balance Mobile */}
-                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-all duration-500 ${
-                  creditChange === 'increase' ? 'bg-amber-200 text-amber-900' :
-                  creditChange === 'decrease' ? 'bg-red-200 text-red-900' :
-                  'bg-amber-100 text-amber-800'
-                }`}>
-                  <Coins className="w-3 h-3 mr-1" />
-                  {user?.timeCredits || 0} credits
-                  {creditChange === 'increase' && (
-                    <TrendingUp className="w-3 h-3 ml-1 text-amber-600" />
-                  )}
-                  {creditChange === 'decrease' && (
-                    <TrendingDown className="w-3 h-3 ml-1 text-red-600" />
-                  )}
-                </div>
-
+              <div className="flex items-center px-4">
                 {/* Notification Dropdown Mobile */}
                 <NotificationDropdown pendingCount={incomingCount} />
               </div>

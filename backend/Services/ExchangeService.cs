@@ -337,65 +337,11 @@ namespace SkillForge.Api.Services
                 exchange.Status = ExchangeStatus.Completed;
                 exchange.UpdatedAt = DateTime.UtcNow;
 
-                // Get users with tracking to ensure consistency
-                var offerer = exchange.Offerer ?? await _context.Users.FindAsync(exchange.OffererId);
-                var learner = exchange.Learner ?? await _context.Users.FindAsync(exchange.LearnerId);
-
-                if (offerer == null || learner == null)
-                {
-                    throw new InvalidOperationException("Users not found");
-                }
-
-                // Ensure users are tracked by the context
-                _context.Attach(offerer);
-                _context.Attach(learner);
-
-                // Check if learner has enough credits
-                var creditsToTransfer = (int)Math.Ceiling(exchange.Duration);
-                if (learner.TimeCredits < creditsToTransfer)
-                {
-                    throw new InvalidOperationException("Learner does not have enough credits");
-                }
-
-                // Transfer credits
-                learner.TimeCredits -= creditsToTransfer;
-                offerer.TimeCredits += creditsToTransfer;
-                learner.UpdatedAt = DateTime.UtcNow;
-                offerer.UpdatedAt = DateTime.UtcNow;
-
-                // Record the credit transaction
-                var fromTransaction = new CreditTransaction
-                {
-                    UserId = exchange.LearnerId,
-                    Amount = -creditsToTransfer,
-                    BalanceAfter = learner.TimeCredits,
-                    TransactionType = "ExchangeComplete",
-                    Reason = $"Completed exchange for skill: {exchange.Skill?.Name ?? "Unknown"}",
-                    RelatedUserId = exchange.OffererId,
-                    ExchangeId = exchange.Id,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                var toTransaction = new CreditTransaction
-                {
-                    UserId = exchange.OffererId,
-                    Amount = creditsToTransfer,
-                    BalanceAfter = offerer.TimeCredits,
-                    TransactionType = "ExchangeComplete",
-                    Reason = $"Completed exchange for skill: {exchange.Skill?.Name ?? "Unknown"}",
-                    RelatedUserId = exchange.LearnerId,
-                    ExchangeId = exchange.Id,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                _context.CreditTransactions.Add(fromTransaction);
-                _context.CreditTransactions.Add(toTransaction);
-
                 // Create status history record
-                await CreateStatusHistoryAsync(exchangeId, ExchangeStatus.Accepted, ExchangeStatus.Completed, userId, 
-                    $"Exchange completed with credit transfer of {creditsToTransfer} time credits");
+                await CreateStatusHistoryAsync(exchangeId, ExchangeStatus.Accepted, ExchangeStatus.Completed, userId,
+                    "Exchange completed successfully");
 
-                _logger.LogInformation($"Exchange {exchangeId} completed. Transferred {creditsToTransfer} credits from user {learner.Id} to user {offerer.Id}");
+                _logger.LogInformation($"Exchange {exchangeId} completed successfully");
 
                 return await GetExchangeDtoAsync(exchangeId);
         }

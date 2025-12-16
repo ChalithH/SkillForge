@@ -258,7 +258,7 @@ export const apiSlice = createApi({
     }),
     getUserById: builder.query<UserMatchDto, number>({
       query: (userId) => `/matching/user/${userId}`,
-      providesTags: (result, error, userId) => [{ type: 'User', id: userId }],
+      providesTags: (_result, _error, userId) => [{ type: 'User', id: userId }],
     }),
     
     // Review endpoints

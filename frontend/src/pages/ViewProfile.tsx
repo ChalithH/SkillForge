@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Star, Award, Users, Clock, ArrowLeft, Loader2 } from 'lucide-react';
 import Navigation from '../components/Navigation';
@@ -187,7 +187,7 @@ export default function ViewProfile() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-medium text-gray-900">{skill.skillName}</h3>
-                      <span className="text-sm text-gray-600">{skill.category}</span>
+                      <span className="text-sm text-gray-600">{skill.skillCategory}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-green-700">{getProficiencyLabel(skill.proficiencyLevel)}</span>
@@ -225,7 +225,7 @@ export default function ViewProfile() {
           skills={user.skillsOffered.map(s => ({
             id: s.skillId,
             name: s.skillName,
-            category: s.category,
+            category: s.skillCategory,
             description: s.description || '',
           }))}
           onSuccess={() => {

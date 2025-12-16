@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Clock, Users, CheckCircle, X, AlertCircle, Gift, Calendar, User } from 'lucide-react';
+import { Clock, Users, CheckCircle, AlertCircle, Gift, Calendar, User } from 'lucide-react';
 import { SignalRNotification, useSignalR } from '../hooks/useSignalR';
 import { useAppSelector } from '../store/hooks';
 
@@ -9,7 +9,7 @@ interface ActivityItem extends SignalRNotification {
 
 export const ActivityFeed: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
-  const { notifications, addNotificationListener, onlineUsers } = useSignalR();
+  const { notifications, onlineUsers } = useSignalR();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
 
   useEffect(() => {

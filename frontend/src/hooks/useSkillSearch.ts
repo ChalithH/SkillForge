@@ -79,8 +79,8 @@ export function useSkillSearch(options: UseSkillSearchOptions = {}) {
 }
 
 function getContextMessage(
-  skill: Skill, 
-  existingUserSkill: UserSkill | undefined, 
+  _skill: Skill,
+  existingUserSkill: UserSkill | undefined,
   context?: 'teaching' | 'learning'
 ): string | null {
   if (!existingUserSkill || !context) return null;

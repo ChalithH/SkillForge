@@ -11,7 +11,7 @@ import { Search, Filter, Users, TrendingUp, Loader2, ChevronLeft, ChevronRight, 
 
 export default function Browse() {
   const { user } = useAppSelector((state) => state.auth);
-  const { isUserOnline } = useNotifications();
+  const { isUserOnline: _isUserOnline } = useNotifications();
   const [filters, setFilters] = useState<BrowseFilters>({
     page: 1,
     limit: 12,

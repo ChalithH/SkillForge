@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Skill, UserSkill, CreateUserSkillRequest } from '../types';
+import { Skill, UserSkill } from '../types';
 import { useSkillSearch } from '../hooks/useSkillSearch';
 import ModalLayout from './shared/ModalLayout';
 import SkillSearchInput from './shared/SkillSearchInput';
