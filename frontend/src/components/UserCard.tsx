@@ -62,7 +62,7 @@ export const UserCard: React.FC<UserCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200">
+    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200 flex flex-col h-full">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-4">
@@ -77,15 +77,15 @@ export const UserCard: React.FC<UserCardProps> = ({
               title={isUserOnline(user.id) ? 'Online' : 'Offline'}
             />
           </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-lg text-gray-900">{user.name}</h3>
-            <div className="flex items-center space-x-2 mt-1">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-lg text-gray-900 truncate">{user.name}</h3>
+            <div className="flex items-center gap-x-2 gap-y-1 flex-wrap mt-1">
               <div className="flex items-center">
                 {renderStars(user.averageRating)}
+                <span className="text-sm text-gray-600 ml-1">
+                  {user.averageRating > 0 ? user.averageRating.toFixed(1) : 'New'}
+                </span>
               </div>
-              <span className="text-sm text-gray-600">
-                {user.averageRating > 0 ? user.averageRating.toFixed(1) : 'No ratings'}
-              </span>
               <span className="text-sm text-gray-500">
                 ({user.reviewCount} {user.reviewCount === 1 ? 'review' : 'reviews'})
               </span>
@@ -94,25 +94,25 @@ export const UserCard: React.FC<UserCardProps> = ({
         </div>
         
         {showCompatibilityScore && user.compatibilityScore > 0 && (
-          <div className={`px-3 py-1 rounded-full text-sm font-medium ${getCompatibilityColor(user.compatibilityScore)}`}>
+          <div className={`flex items-center justify-center px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${getCompatibilityColor(user.compatibilityScore)}`}>
             {Math.round(user.compatibilityScore)}% match
           </div>
         )}
       </div>
 
       {/* Skills Offered */}
-      <div className="mb-4">
+      <div className="mb-4 flex-grow">
         <h4 className="font-medium text-gray-900 mb-2 flex items-center">
           <Users className="w-4 h-4 mr-1" />
           Skills Offered ({user.skillsOffered.length})
         </h4>
-        <div className="flex flex-wrap gap-2 min-h-[28px]">
+        <div className="flex flex-col gap-2">
           {user.skillsOffered.length > 0 ? (
             <>
               {user.skillsOffered.slice(0, 2).map((skill) => (
                 <div
                   key={skill.id}
-                  className="inline-flex items-center px-3 py-1 bg-green-50 text-green-800 text-xs font-medium rounded-full border border-green-200"
+                  className="inline-flex items-center px-3 py-1 bg-green-50 text-green-800 text-xs font-medium rounded-full border border-green-200 w-fit"
                 >
                   <span>{skill.skillName}</span>
                   <div className="ml-2 flex">
@@ -123,7 +123,7 @@ export const UserCard: React.FC<UserCardProps> = ({
                 </div>
               ))}
               {user.skillsOffered.length > 2 && (
-                <div className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                <div className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full w-fit">
                   +{user.skillsOffered.length - 2} more
                 </div>
               )}
@@ -135,7 +135,7 @@ export const UserCard: React.FC<UserCardProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex space-x-3 pt-4 border-t border-gray-100">
+      <div className="flex space-x-3 pt-4 border-t border-gray-100 mt-auto">
         <button
           onClick={() => navigate(`/profile/${user.id}`, { state: { user } })}
           className="flex-1 flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"

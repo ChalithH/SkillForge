@@ -195,19 +195,33 @@ namespace SkillForge.Api.Services
                 return await GetTopRatedUsersAsync(null, limit);
             }
 
+            // Get user's offered skills for mutual match calculation
+            var userOfferedSkills = await _context.UserSkills
+                .Where(us => us.UserId == userId && us.IsOffering)
+                .Select(us => us.SkillId)
+                .ToListAsync();
+
             // Find users who offer skills the current user wants to learn
             var recommendedUsers = await _context.Users
                 .Where(u => u.Id != userId)
                 .Include(u => u.UserSkills)
                     .ThenInclude(us => us.Skill)
                 .Include(u => u.ReviewsReceived)
-                .Where(u => u.UserSkills.Any(us => 
+                .Where(u => u.UserSkills.Any(us =>
                     userLearningInterests.Contains(us.SkillId) && us.IsOffering))
-                .Take(limit)
                 .ToListAsync();
 
-            return recommendedUsers.Select(u => {
+            // Calculate compatibility scores and sort by score
+            var scoredUsers = recommendedUsers.Select(u => {
                 var avgRating = u.ReviewsReceived.Any() ? u.ReviewsReceived.Average(r => r.Rating) : 0.0;
+
+                // Calculate compatibility score
+                var compatibilityScore = CalculateCompatibilityScore(
+                    u,
+                    userLearningInterests,
+                    userOfferedSkills,
+                    avgRating);
+
                 return new UserMatchDto
                 {
                     Id = u.Id,
@@ -219,6 +233,7 @@ namespace SkillForge.Api.Services
                     Rating = avgRating,
                     AverageRating = avgRating,
                     ReviewCount = u.ReviewsReceived.Count,
+                    CompatibilityScore = compatibilityScore,
                     IsOnline = _userPresenceService.IsUserOnlineAsync(u.Id).GetAwaiter().GetResult(),
                     SkillsOffered = u.UserSkills.Where(us => us.IsOffering).Select(us => new MatchUserSkillDto
                     {
@@ -230,7 +245,68 @@ namespace SkillForge.Api.Services
                         Description = us.Description
                     }).ToList()
                 };
-            });
+            })
+            .OrderByDescending(u => u.CompatibilityScore)
+            .Take(limit);
+
+            return scoredUsers;
+        }
+
+        private double CalculateCompatibilityScore(
+            User otherUser,
+            List<int> userLearningInterests,
+            List<int> userOfferedSkills,
+            double otherUserRating)
+        {
+            // Base score starts at 0
+            double score = 0;
+
+            // Skills they can teach you (what they offer that you want to learn)
+            var theirMatchingSkills = otherUser.UserSkills
+                .Where(us => us.IsOffering && userLearningInterests.Contains(us.SkillId))
+                .ToList();
+
+            // Skills you can teach them (what they want to learn that you offer)
+            var mutualMatchSkills = otherUser.UserSkills
+                .Where(us => !us.IsOffering && userOfferedSkills.Contains(us.SkillId))
+                .ToList();
+
+            if (theirMatchingSkills.Count == 0)
+            {
+                return 0;
+            }
+
+            // Skill match score (40% weight) - based on how many of your interests they cover
+            double skillCoverage = (double)theirMatchingSkills.Count / userLearningInterests.Count;
+            score += skillCoverage * 40;
+
+            // Proficiency score (25% weight) - average proficiency of their matching skills
+            double avgProficiency = theirMatchingSkills.Average(s => GetProficiencyValue(s.ProficiencyLevel));
+            score += (avgProficiency / 3.0) * 25; // Normalize to 0-25 (Expert=3)
+
+            // Mutual exchange potential (20% weight) - they want to learn what you teach
+            if (mutualMatchSkills.Count > 0 && userOfferedSkills.Count > 0)
+            {
+                double mutualCoverage = Math.Min(1.0, (double)mutualMatchSkills.Count / userOfferedSkills.Count);
+                score += mutualCoverage * 20;
+            }
+
+            // Rating bonus (15% weight)
+            score += (otherUserRating / 5.0) * 15;
+
+            return Math.Round(score, 1);
+        }
+
+        private int GetProficiencyValue(int proficiencyLevel)
+        {
+            // ProficiencyLevel is 1-5 in the database
+            // Normalize to 1-3 scale for scoring (1=beginner, 2=intermediate, 3=expert)
+            return proficiencyLevel switch
+            {
+                >= 4 => 3,  // 4-5 = Expert
+                >= 2 => 2,  // 2-3 = Intermediate
+                _ => 1      // 1 = Beginner
+            };
         }
 
         public async Task<IEnumerable<UserMatchDto>> GetTopRatedUsersAsync(string? category = null, int limit = 10)
